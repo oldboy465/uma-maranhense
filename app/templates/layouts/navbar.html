@@ -1,31 +1,42 @@
-<header class="header-nav">
-    <div class="nav-container">
-        <a href="{{ url_for('home.index') }}" class="brand-logo">
-            <span class="brand-abruem">ABRUEM</span>
-            <span class="brand-divider">|</span>
-            <span class="brand-sub">Plataforma Maria Firmina</span>
+<header class="sticky top-0 z-50 bg-white/95 backdrop-blur border-b border-slate-200 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+        
+        <!-- Logo e Home -->
+        <a href="{{ url_for('home.index') }}" class="flex items-center gap-3 group">
+            <img src="{{ url_for('static', filename='img/logo-abruem.png') }}" alt="Logo ABRUEM" class="h-12 w-auto object-contain transition group-hover:scale-105">
+            <div class="flex flex-col border-l border-slate-200 pl-3">
+                <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Plataforma</span>
+                <span class="text-base font-bold text-slate-800 tracking-tight leading-tight group-hover:text-abruem-600 transition">Maria Firmina</span>
+            </div>
         </a>
 
-        <nav class="nav-links">
-            <a href="{{ url_for('home.index') }}">Força da Rede</a>
-            <a href="{{ url_for('regioes.index') }}">Regiões</a>
-            <a href="{{ url_for('universidades.lista') }}">Universidades</a>
-            <a href="{{ url_for('comparador.index') }}">Comparador</a>
-            <a href="{{ url_for('explorar.index') }}">Explorar</a>
-            <a href="{{ url_for('metodologia.index') }}">Metodologia</a>
+        <!-- Menu Principal Público -->
+        <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
+            <a href="{{ url_for('home.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Força da Rede</a>
+            <a href="{{ url_for('regioes.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Regiões</a>
+            <a href="{{ url_for('universidades.lista') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Universidades</a>
+            <a href="{{ url_for('comparador.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Comparador</a>
+            <a href="{{ url_for('explorar.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Explorar</a>
+            <a href="{{ url_for('metodologia.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Metodologia</a>
         </nav>
 
-        <div class="nav-actions">
+        <!-- Sessão / Autenticação -->
+        <div class="flex items-center gap-3">
             {% if session.get('usuario_id') %}
-                <span class="user-badge">{{ session.get('nome').split()[0] }}</span>
+                <div class="flex items-center gap-2 pr-2 border-r border-slate-200 text-xs">
+                    <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="font-medium text-slate-700">{{ session.get('nome').split()[0] }}</span>
+                </div>
+                
                 {% if session.get('perfil') == 'ADMIN_CAMARA' %}
-                    <a href="{{ url_for('admin.painel') }}" class="btn btn-outline-nav">Câmara</a>
+                    <a href="{{ url_for('admin.painel') }}" class="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 transition">Painel Câmara</a>
                 {% else %}
-                    <a href="{{ url_for('minha_universidade.painel') }}" class="btn btn-outline-nav">Minha Universidade</a>
+                    <a href="{{ url_for('minha_universidade.painel') }}" class="px-3 py-1.5 text-xs font-semibold rounded-md border border-slate-300 text-slate-700 hover:bg-slate-50 transition">Minha Universidade</a>
                 {% endif %}
-                <a href="{{ url_for('auth.logout') }}" class="btn-logout">Sair</a>
+                
+                <a href="{{ url_for('auth.logout') }}" class="text-xs font-medium text-rose-600 hover:text-rose-700 px-2 py-1 transition">Sair</a>
             {% else %}
-                <a href="{{ url_for('auth.login') }}" class="btn btn-primary-nav">Área Restrita</a>
+                <a href="{{ url_for('auth.login') }}" class="inline-flex items-center justify-center px-4 py-2 text-sm font-semibold rounded-md bg-abruem-800 text-white hover:bg-abruem-900 shadow-sm transition">Área Restrita</a>
             {% endif %}
         </div>
     </div>

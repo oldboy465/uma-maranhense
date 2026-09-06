@@ -3,35 +3,41 @@
 {% block title %}{{ universidade.sigla }} — Custo-Aluno{% endblock %}
 
 {% block content %}
-<div class="perfil-cabecalho">
-    <div class="perfil-identificacao">
-        <span class="badge-tipo">{{ universidade.tipo }}</span>
-        <h1>{{ universidade.sigla }} — Custo-Aluno</h1>
-        <p class="perfil-localizacao">{{ universidade.nome }} ({{ universidade.uf }})</p>
+<!-- Cabeçalho Institucional -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100">{{ universidade.tipo }}</span>
+            <span class="text-xs text-slate-400">{{ universidade.uf }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900">{{ universidade.sigla }} — Custo-Aluno</h1>
+        <p class="text-xs text-slate-500">{{ universidade.nome }}</p>
     </div>
-    <div class="perfil-acoes">
-        <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="btn btn-outline">Visão Geral</a>
-    </div>
+    <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition w-fit">
+        &larr; Visão Geral
+    </a>
 </div>
 
-<div class="card-aviso-metodologico">
-    <h3>Aviso Metodológico</h3>
-    <p>
+<!-- Alerta Metodológico -->
+<div class="bg-amber-50/80 border-l-4 border-amber-500 p-6 rounded-r-xl mb-8 shadow-sm">
+    <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wider mb-1">Aviso Metodológico</h3>
+    <p class="text-sm text-amber-950 leading-relaxed">
         O custo-aluno não deve ser interpretado como indicador de eficiência ou ranqueamento[cite: 1]. Variações estruturais (cursos laboratoriais de alta densidade, hospitais de ensino e interiorização multicampi) alteram naturalmente essa relação[cite: 1].
     </p>
 </div>
 
-<div class="grid-resumo-estatistico margem-topo">
-    <div class="card-estatistico">
-        <h4>Custo por Estudante ({{ ano }})</h4>
-        <div class="valor-destaque">
-            {% if indicadores.get('IND_CUSTO_ALUNO') and indicadores.get('IND_CUSTO_ALUNO').valor_numerico is not none %}
-                {{ indicadores.get('IND_CUSTO_ALUNO').valor_numerico | moeda_br }}
-            {% else %}
-                <span class="text-mutado">Não calculável</span>
-            {% endif %}
-        </div>
-        <small>Relação Despesa Liquidada ÷ Matrículas Totais[cite: 1]</small>
+<!-- Cartão de Indicador -->
+<div class="bg-white p-8 rounded-xl border border-slate-200 shadow-sm max-w-md">
+    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Custo por Estudante ({{ ano }})</span>
+    <div class="text-4xl font-extrabold text-abruem-800 my-3">
+        {% if indicadores.get('IND_CUSTO_ALUNO') and indicadores.get('IND_CUSTO_ALUNO').valor_numerico is not none %}
+            {{ indicadores.get('IND_CUSTO_ALUNO').valor_numerico | moeda_br }}
+        {% elif indicadores.get('DER_CUSTO_ALUNO') and indicadores.get('DER_CUSTO_ALUNO').valor_numerico is not none %}
+            {{ indicadores.get('DER_CUSTO_ALUNO').valor_numerico | moeda_br }}
+        {% else %}
+            <span class="text-xl font-medium text-slate-400">Não calculável</span>
+        {% endif %}
     </div>
+    <p class="text-xs text-slate-500">Relação direta: Despesa Liquidada Própria (R$) ÷ Matrículas Totais Ativas[cite: 1].</p>
 </div>
 {% endblock %}

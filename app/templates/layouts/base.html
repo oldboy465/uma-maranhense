@@ -1,20 +1,37 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="h-full bg-slate-50">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Rede ABRUEM — Plataforma Maria Firmina{% endblock %}</title>
     
-    <!-- CSS Customizado e Componentes -->
+    <!-- Tailwind CSS CDN com configuração personalizada de cores -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        abruem: {
+                            50: '#f0f7fc',
+                            100: '#e0f0f9',
+                            500: '#3299d6', // Azul oficial do logo
+                            600: '#1d78b5',
+                            800: '#1e3a8a', // Azul escuro de contraste
+                            900: '#0f172a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="site-body">
+<body class="flex flex-col min-h-full font-sans text-slate-900 antialiased selection:bg-abruem-500 selection:text-white">
     {% include 'layouts/navbar.html' %}
 
-    <main class="main-container">
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {% include 'layouts/alertas.html' %}
         {% block content %}{% endblock %}
     </main>

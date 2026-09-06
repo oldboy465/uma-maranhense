@@ -3,71 +3,83 @@
 {% block title %}{{ universidade.sigla }} — Execução Orçamentária{% endblock %}
 
 {% block content %}
-<div class="perfil-cabecalho">
-    <div class="perfil-identificacao">
-        <span class="badge-tipo">{{ universidade.tipo }}</span>
-        <h1>{{ universidade.sigla }} — Finanças e Orçamento</h1>
-        <p class="perfil-localizacao">{{ universidade.nome }} ({{ universidade.uf }})</p>
+<!-- Cabeçalho Institucional -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-2 mb-1.5">
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100">{{ universidade.tipo }}</span>
+            <span class="text-xs text-slate-400">{{ universidade.uf }}</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900">{{ universidade.sigla }} — Finanças e Orçamento</h1>
+        <p class="text-xs text-slate-500">{{ universidade.nome }}</p>
     </div>
-    <div class="perfil-acoes">
-        <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="btn btn-outline">Visão Geral</a>
-    </div>
+    <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="inline-flex items-center px-4 py-2 text-xs font-semibold rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 transition w-fit">
+        &larr; Visão Geral
+    </a>
 </div>
 
-<div class="grid-resumo-estatistico margem-topo">
-    <div class="card-estatistico">
-        <h4>Orçamento Executado / Liquidado ({{ ano }})</h4>
-        <div class="valor-destaque">
+<!-- Destaques -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado / Liquidado ({{ ano }})</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">
             {% if indicadores.get('IND_ORC_EXECUTADO') and indicadores.get('IND_ORC_EXECUTADO').valor_numerico is not none %}
                 {{ indicadores.get('IND_ORC_EXECUTADO').valor_numerico | moeda_br }}
+            {% elif indicadores.get('FIN_LIQUIDADO') and indicadores.get('FIN_LIQUIDADO').valor_numerico is not none %}
+                {{ indicadores.get('FIN_LIQUIDADO').valor_numerico | moeda_br }}
             {% else %}
-                <span class="text-mutado">-</span>
+                <span class="text-slate-300">-</span>
             {% endif %}
         </div>
-        <small>Despesa liquidada auditada</small>
+        <span class="text-xs text-slate-500">Despesa liquidada auditada</span>
     </div>
 
-    <div class="card-estatistico">
-        <h4>Dotação Orçamentária Autorizada</h4>
-        <div class="valor-destaque">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Dotação Orçamentária Atualizada</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">
             {% if indicadores.get('IND_ORC_AUTORIZADO') and indicadores.get('IND_ORC_AUTORIZADO').valor_numerico is not none %}
                 {{ indicadores.get('IND_ORC_AUTORIZADO').valor_numerico | moeda_br }}
+            {% elif indicadores.get('FIN_ORCAMENTO_ATUALIZADO') and indicadores.get('FIN_ORCAMENTO_ATUALIZADO').valor_numerico is not none %}
+                {{ indicadores.get('FIN_ORCAMENTO_ATUALIZADO').valor_numerico | moeda_br }}
             {% else %}
-                <span class="text-mutado">-</span>
+                <span class="text-slate-300">-</span>
             {% endif %}
         </div>
-        <small>Orçamento atualizado</small>
+        <span class="text-xs text-slate-500">Orçamento autorizado</span>
     </div>
 </div>
 
-<div class="tabela-container margem-topo">
-    <table class="tabela-dados">
-        <thead>
-            <tr>
-                <th>Código</th>
-                <th>Indicador Financeiro</th>
-                <th class="text-right">Valor em Reais (R$)</th>
-                <th>Estágio da Despesa</th>
-                <th>Fonte Oficial</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for r in registros_financas %}
-            <tr>
-                <td><code>{{ r.indicador_codigo }}</code></td>
-                <td><strong>{{ r.indicador_nome }}</strong></td>
-                <td class="text-right">
-                    <strong>{{ r.valor_numerico | moeda_br }}</strong>
-                </td>
-                <td>{{ r.indicador_tipo or 'Execução' }}</td>
-                <td>{{ r.fonte_descricao or 'Balanço Geral Anual' }}</td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="5" class="text-center">Nenhum dado orçamentário validado para o exercício.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Tabela de Registros Financeiros -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5 w-1/6">Código</th>
+                    <th scope="col" class="px-6 py-3.5 w-2/6">Indicador Financeiro</th>
+                    <th scope="col" class="px-6 py-3.5 text-right w-1/6">Valor Declarado</th>
+                    <th scope="col" class="px-6 py-3.5 w-1/6">Estágio</th>
+                    <th scope="col" class="px-6 py-3.5 w-1/6">Fonte Oficial</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for r in registros_financas %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4 font-mono text-xs text-abruem-800 font-semibold">{{ r.indicador_codigo }}</td>
+                    <td class="px-6 py-4 font-medium text-slate-900">{{ r.indicador_nome }}</td>
+                    <td class="px-6 py-4 text-right font-bold text-slate-900">
+                        {{ r.valor_numerico | moeda_br }}
+                    </td>
+                    <td class="px-6 py-4 text-xs font-medium text-slate-600">{{ r.indicador_tipo or 'Execução' }}</td>
+                    <td class="px-6 py-4 text-xs text-slate-500">{{ r.fonte_descricao or 'Balanço Geral Anual' }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum dado orçamentário validado para o exercício.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

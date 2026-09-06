@@ -3,37 +3,45 @@
 {% block title %}Universidades Filiadas — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <h1>Universidades Filiadas</h1>
-    <p>Relação das 31 instituições estaduais e municipais que compõem a Rede ABRUEM.</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Universidades Filiadas</h1>
+    <p class="text-sm text-slate-500 mt-1">Relação das 31 instituições estaduais e municipais que compõem a Rede ABRUEM.</p>
 </div>
 
-<div class="tabela-container">
-    <table class="tabela-dados">
-        <thead>
-            <tr>
-                <th style="width: 15%;">Sigla</th>
-                <th style="width: 45%;">Nome da Instituição</th>
-                <th style="width: 10%;">Tipo</th>
-                <th style="width: 10%;">UF</th>
-                <th style="width: 10%;">Região</th>
-                <th style="width: 10%;" class="text-center">Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for u in universidades %}
-            <tr>
-                <td><strong>{{ u.sigla }}</strong></td>
-                <td>{{ u.nome }}</td>
-                <td><span class="badge-tipo">{{ u.tipo }}</span></td>
-                <td>{{ u.uf }}</td>
-                <td>{{ u.regiao }}</td>
-                <td class="text-center">
-                    <a href="{{ url_for('universidades.perfil', sigla=u.sigla) }}" class="btn btn-sm btn-outline">Perfil</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5 w-1/6">Sigla</th>
+                    <th scope="col" class="px-6 py-3.5 w-3/6">Nome da Instituição</th>
+                    <th scope="col" class="px-6 py-3.5">Tipo</th>
+                    <th scope="col" class="px-6 py-3.5">UF</th>
+                    <th scope="col" class="px-6 py-3.5">Região</th>
+                    <th scope="col" class="px-6 py-3.5 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for u in universidades %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900">{{ u.sigla }}</td>
+                    <td class="px-6 py-4 text-slate-800 font-medium">{{ u.nome }}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ u.tipo }}</span>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100">{{ u.uf }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-slate-600">{{ u.regiao }}</td>
+                    <td class="px-6 py-4 text-center">
+                        <a href="{{ url_for('universidades.perfil', sigla=u.sigla) }}" class="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-abruem-500 transition">
+                            Ver Perfil
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

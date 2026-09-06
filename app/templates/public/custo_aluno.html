@@ -3,40 +3,47 @@
 {% block title %}Custo-Aluno — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <span class="tag-dimensao">Dimensão</span>
-    <h1>Custo-Aluno</h1>
-    <p>Relação entre despesa institucional executada e o total de estudantes atendidos.</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-2">Dimensão</span>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Custo-Aluno</h1>
+    <p class="text-sm text-slate-500 mt-1">Relação entre despesa institucional executada e o total de estudantes atendidos.</p>
 </div>
 
-<div class="card-aviso-metodologico">
-    <h3>Aviso Metodológico Permanente: Custo-Aluno não é Eficiência</h3>
-    <p>
+<!-- Alerta Metodológico Crítico -->
+<div class="bg-amber-50/80 border-l-4 border-amber-500 p-6 rounded-r-xl mb-8 shadow-sm">
+    <h3 class="text-sm font-bold text-amber-900 uppercase tracking-wider mb-1">Aviso Metodológico Permanente: Custo-Aluno não é Eficiência</h3>
+    <p class="text-sm text-amber-950 leading-relaxed">
         O indicador de custo-aluno reflete a estrutura de despesas vinculada ao perfil de cada universidade (presença de hospitais universitários, unidades experimentais agrícolas, cursos com alta densidade laboratorial e dispersão multicampi)[cite: 1]. Ele <strong>nunca deve ser interpretado isoladamente como métrica de eficiência ou ranking de desempenho</strong>[cite: 1].
     </p>
 </div>
 
-<div class="grid-resumo-estatistico margem-topo">
-    <div class="card-estatistico">
-        <h4>Custo-Aluno Médio da Rede</h4>
-        <div class="valor-destaque">{{ custo_aluno_medio | moeda_br }}</div>
-        <small>Média ponderada por estudantes apurados</small>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Custo-Aluno Médio da Rede</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ custo_aluno_medio | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Média ponderada por estudantes apurados</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-abruem-50 text-abruem-600 text-sm font-semibold">Média</span>
     </div>
 
-    <div class="card-estatistico">
-        <h4>Custo-Aluno Mediano</h4>
-        <div class="valor-destaque">{{ custo_aluno_mediana | moeda_br }}</div>
-        <small>Ponto de equilíbrio central das filiadas[cite: 1]</small>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Custo-Aluno Mediano</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ custo_aluno_mediana | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Ponto de equilíbrio central das filiadas[cite: 1]</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold">Mediana</span>
     </div>
 </div>
 
-<div class="card-painel-perfil margem-topo">
-    <h3>Memória de Cálculo Padronizada</h3>
-    <p>
-        <code>Custo por Aluno = Despesa Liquidada Própria (R$) ÷ Matrículas Totais Ativas</code>[cite: 1]
-    </p>
-    <small class="text-mutado">
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+    <h3 class="text-sm font-bold text-slate-900 mb-2">Memória de Cálculo Padronizada</h3>
+    <div class="font-mono text-xs bg-slate-50 p-3 rounded-lg border border-slate-200 text-slate-800 mb-2">
+        Custo por Aluno = Despesa Liquidada Própria (R$) ÷ Matrículas Totais Ativas[cite: 1]
+    </div>
+    <p class="text-xs text-slate-500">
         O cálculo apenas é realizado para exercícios em que despesa liquidada e matrículas foram publicadas e validadas para a mesma instituição no mesmo ano[cite: 1]. Denominadores nulos anulam o resultado[cite: 1].
-    </small>
+    </p>
 </div>
 {% endblock %}

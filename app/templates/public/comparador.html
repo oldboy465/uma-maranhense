@@ -3,99 +3,108 @@
 {% block title %}Comparador Institucional — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <h1>Comparador Institucional</h1>
-    <p>Comparação descritiva lado a lado entre instituições filiadas e os balizadores da rede.</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Comparador Institucional</h1>
+    <p class="text-sm text-slate-500 mt-1">Análise descritiva direta lado a lado entre universidades e os balizadores da rede.</p>
 </div>
 
-<form method="GET" action="{{ url_for('comparador.index') }}" class="form-comparador">
-    <div class="grid-selecao-comparacao">
-        <div class="form-grupo">
-            <label for="uni1">Primeira Instituição:</label>
-            <select name="uni1" id="uni1" required>
-                <option value="">-- Selecione uma universidade --</option>
-                {% for u in universidades %}
-                    <option value="{{ u.id }}" {% if u1 and u1.id == u.id %}selected{% endif %}>{{ u.sigla }} - {{ u.nome }}</option>
-                {% endfor %}
-            </select>
+<!-- Card de Filtros -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-8">
+    <form method="GET" action="{{ url_for('comparador.index') }}" class="form-comparador">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div>
+                <label for="uni1" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Primeira Instituição:</label>
+                <select name="uni1" id="uni1" required class="w-full rounded-lg border-slate-300 text-sm text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
+                    <option value="">Selecione uma universidade</option>
+                    {% for u in universidades %}
+                        <option value="{{ u.id }}" {% if u1 and u1.id == u.id %}selected{% endif %}>{{ u.sigla }} — {{ u.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="uni2" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Segunda Instituição:</label>
+                <select name="uni2" id="uni2" required class="w-full rounded-lg border-slate-300 text-sm text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
+                    <option value="">Selecione uma universidade</option>
+                    {% for u in universidades %}
+                        <option value="{{ u.id }}" {% if u2 and u2.id == u.id %}selected{% endif %}>{{ u.sigla }} — {{ u.nome }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="ano" class="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Exercício:</label>
+                <select name="ano" id="ano" class="w-full rounded-lg border-slate-300 text-sm text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
+                    {% for a in [2024, 2023, 2022] %}
+                        <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </div>
 
-        <div class="form-grupo">
-            <label for="uni2">Segunda Instituição:</label>
-            <select name="uni2" id="uni2" required>
-                <option value="">-- Selecione uma universidade --</option>
-                {% for u in universidades %}
-                    <option value="{{ u.id }}" {% if u2 and u2.id == u.id %}selected{% endif %}>{{ u.sigla }} - {{ u.nome }}</option>
-                {% endfor %}
-            </select>
+        <div class="mt-6 flex justify-end">
+            <button type="submit" class="inline-flex items-center px-5 py-2.5 rounded-lg bg-abruem-800 text-white font-semibold text-sm hover:bg-abruem-900 shadow-sm transition">
+                Comparar Indicadores
+            </button>
         </div>
+    </form>
+</div>
 
-        <div class="form-grupo">
-            <label for="ano">Exercício:</label>
-            <select name="ano" id="ano">
-                {% for a in [2024, 2023, 2022] %}
-                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
-                {% endfor %}
-            </select>
+<!-- Tabela Comparativa -->
+{% if u1 and u2 %}
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+        <span class="text-sm font-semibold text-slate-700">Resultado do Confronto (Exercício {{ ano }})</span>
+        <div class="flex items-center gap-3 text-xs">
+            <span class="font-bold text-abruem-800">{{ u1.sigla }}</span>
+            <span class="text-slate-400">vs</span>
+            <span class="font-bold text-abruem-600">{{ u2.sigla }}</span>
         </div>
     </div>
-    <button type="submit" class="btn btn-primary">Comparar Indicadores</button>
-</form>
-
-{% if u1 and u2 %}
-<div class="tabela-container margem-topo">
-    <table class="tabela-dados">
-        <thead>
-            <tr>
-                <th>Indicador</th>
-                <th>Dimensão</th>
-                <th class="text-right">{{ u1.sigla }}</th>
-                <th class="text-right">{{ u2.sigla }}</th>
-                <th class="text-right">Mediana da Rede</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for c in comparativo %}
-            <tr>
-                <td><strong>{{ c.indicador.nome }}</strong></td>
-                <td><span class="tag-dimensao">{{ c.indicador.dimensao }}</span></td>
-                <td class="text-right">
-                    {% if c.v1 is not none %}
-                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
-                            {{ c.v1 | moeda_br }}
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5">Indicador</th>
+                    <th scope="col" class="px-6 py-3.5">Dimensão</th>
+                    <th scope="col" class="px-6 py-3.5 text-right font-bold text-abruem-800">{{ u1.sigla }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-right font-bold text-abruem-600">{{ u2.sigla }}</th>
+                    <th scope="col" class="px-6 py-3.5 text-right bg-slate-50/80 font-bold text-slate-700">Mediana da Rede</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for c in comparativo %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4 font-medium text-slate-900">{{ c.indicador.nome }}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ c.indicador.dimensao }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right font-bold text-slate-900">
+                        {% if c.v1 is not none %}
+                            {% if c.indicador.tipo_dado == 'MONETARIO' %}{{ c.v1 | moeda_br }}{% else %}{{ c.v1 | numero_br(2) }}{% endif %}
                         {% else %}
-                            {{ c.v1 | numero_br(2) }}
+                            <span class="text-slate-300">-</span>
                         {% endif %}
-                    {% else %}
-                        <span class="text-mutado">-</span>
-                    {% endif %}
-                </td>
-                <td class="text-right">
-                    {% if c.v2 is not none %}
-                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
-                            {{ c.v2 | moeda_br }}
+                    </td>
+                    <td class="px-6 py-4 text-right font-bold text-slate-900">
+                        {% if c.v2 is not none %}
+                            {% if c.indicador.tipo_dado == 'MONETARIO' %}{{ c.v2 | moeda_br }}{% else %}{{ c.v2 | numero_br(2) }}{% endif %}
                         {% else %}
-                            {{ c.v2 | numero_br(2) }}
+                            <span class="text-slate-300">-</span>
                         {% endif %}
-                    {% else %}
-                        <span class="text-mutado">-</span>
-                    {% endif %}
-                </td>
-                <td class="text-right">
-                    {% if c.mediana_rede is not none %}
-                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
-                            {{ c.mediana_rede | moeda_br }}
+                    </td>
+                    <td class="px-6 py-4 text-right font-semibold text-slate-600 bg-slate-50/50">
+                        {% if c.mediana_rede is not none %}
+                            {% if c.indicador.tipo_dado == 'MONETARIO' %}{{ c.mediana_rede | moeda_br }}{% else %}{{ c.mediana_rede | numero_br(2) }}{% endif %}
                         {% else %}
-                            {{ c.mediana_rede | numero_br(2) }}
+                            <span class="text-slate-300">-</span>
                         {% endif %}
-                    {% else %}
-                        <span class="text-mutado">-</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endif %}
 {% endblock %}

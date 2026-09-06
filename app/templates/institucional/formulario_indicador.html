@@ -3,35 +3,41 @@
 {% block title %}Atualizar Indicador — {{ indicador.codigo }}{% endblock %}
 
 {% block content %}
-<div class="login-container" style="max-width: 700px;">
-    <div class="card-login" style="text-align: left;">
-        <div class="login-header">
-            <span class="badge-institucional">{{ universidade.sigla }}</span>
-            <h2>{{ indicador.nome }}</h2>
-            <p>Dimensão: <strong>{{ indicador.dimensao }}</strong> | Tipo: <strong>{{ indicador.tipo_dado }}</strong></p>
+<div class="max-w-2xl mx-auto py-8 px-4">
+    <div class="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+        <div class="border-b border-slate-100 pb-5 mb-6">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-2">
+                {{ universidade.sigla }}
+            </span>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">{{ indicador.nome }}</h2>
+            <p class="text-xs text-slate-500 mt-1">
+                Dimensão: <strong class="text-slate-700">{{ indicador.dimensao }}</strong> | Tipo: <strong class="text-slate-700">{{ indicador.tipo_dado }}</strong>
+            </p>
         </div>
 
         {% if indicador.is_calculado() %}
-            <div class="alert alert-warning">
-                Este indicador é <strong>calculado automaticamente pelo sistema</strong> e não aceita digitação manual[cite: 1].
+            <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-lg text-sm text-amber-900">
+                Este indicador é <strong>calculado automaticamente pelo sistema</strong> e não aceita digitação manual[cite: 10].
             </div>
         {% else %}
-            <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-login">
+            <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="space-y-5">
                 <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
                 <input type="hidden" name="indicador_id" value="{{ indicador.id }}">
                 <input type="hidden" name="ano_referencia" value="{{ ano }}">
 
-                <div class="form-grupo">
-                    <label for="valor">Valor Declarado (Exercício {{ ano }}):</label>
-                    <input type="text" name="valor" id="valor" class="input-valor"
+                <div>
+                    <label for="valor" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        Valor Declarado (Exercício {{ ano }}):
+                    </label>
+                    <input type="text" name="valor" id="valor" class="input-valor w-full rounded-lg border-slate-300 text-sm font-semibold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3"
                            value="{% if registro and registro.valor_numerico is not none %}{{ registro.valor_numerico | numero_br(2) }}{% endif %}"
                            placeholder="0,00" required>
-                    <small class="text-mutado">Utilize ponto para milhar e vírgula para centavos/decimais.</small>
+                    <small class="text-xs text-slate-400 mt-1 block">Utilize ponto para milhar e vírgula para centavos/decimais.</small>
                 </div>
 
-                <div class="form-grupo">
-                    <label for="fonte_tipo">Tipo do Documento Comprobatório:</label>
-                    <select name="fonte_tipo" id="fonte_tipo" required>
+                <div>
+                    <label for="fonte_tipo" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Tipo do Documento:</label>
+                    <select name="fonte_tipo" id="fonte_tipo" required class="w-full rounded-lg border-slate-300 text-sm text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
                         <option value="RELATORIO_GESTAO" {% if registro and registro.fonte_tipo == 'RELATORIO_GESTAO' %}selected{% endif %}>Relatório de Gestão</option>
                         <option value="BALANCO_GERAL" {% if registro and registro.fonte_tipo == 'BALANCO_GERAL' %}selected{% endif %}>Balanço Geral / Prestação de Contas</option>
                         <option value="DIARIO_OFICIAL" {% if registro and registro.fonte_tipo == 'DIARIO_OFICIAL' %}selected{% endif %}>Diário Oficial</option>
@@ -39,23 +45,33 @@
                     </select>
                 </div>
 
-                <div class="form-grupo">
-                    <label for="fonte_descricao">Identificação da Fonte (Página, Tabela ou Detalhe):</label>
+                <div>
+                    <label for="fonte_descricao" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
+                        Identificação da Fonte (Página, Tabela ou Detalhe):
+                    </label>
                     <input type="text" name="fonte_descricao" id="fonte_descricao" 
                            value="{{ registro.fonte_descricao if registro else '' }}" 
-                           placeholder="Ex: Tabela 4.2, pág. 45" required>
+                           placeholder="Ex: Tabela 4.2, pág. 45" required
+                           class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
                 </div>
 
-                <div class="form-grupo">
-                    <label for="fonte_url">URL do Documento (Opcional):</label>
+                <div>
+                    <label for="fonte_url" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">URL do Documento (Opcional):</label>
                     <input type="url" name="fonte_url" id="fonte_url" 
                            value="{{ registro.fonte_url if registro else '' }}" 
-                           placeholder="https://exemplo.edu.br/documento.pdf">
+                           placeholder="https://exemplo.edu.br/documento.pdf"
+                           class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
                 </div>
 
-                <div class="botoes-acao" style="display: flex; gap: 10px; margin-top: 20px;">
-                    <button type="submit" name="acao" value="salvar_rascunho" class="btn btn-outline">Salvar Rascunho</button>
-                    <button type="submit" name="acao" value="enviar" class="btn btn-primary">Submeter para Validação</button>
+                <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+                    <button type="submit" name="acao" value="salvar_rascunho" 
+                            class="px-4 py-2.5 rounded-lg border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm">
+                        Salvar Rascunho
+                    </button>
+                    <button type="submit" name="acao" value="enviar" 
+                            class="px-5 py-2.5 rounded-lg bg-abruem-800 text-white text-xs font-semibold hover:bg-abruem-900 transition shadow-sm">
+                        Submeter para Validação
+                    </button>
                 </div>
             </form>
         {% endif %}

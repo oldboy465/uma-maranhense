@@ -1,28 +1,34 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Atualizar Senha de Acesso — Plataforma Maria Firmina{% endblock %}
+{% block title %}Atualizar Senha — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="card-login">
-        <div class="login-header">
-            <span class="badge-institucional">Segurança da Conta</span>
-            <h2>Atualização Obrigatória</h2>
-            <p>Por motivos de segurança institucional, defina uma nova senha individual para o seu primeiro acesso.</p>
+<div class="min-h-[60vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-lg">
+        <div class="text-center mb-8">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 uppercase tracking-wider mb-3">
+                Segurança da Conta
+            </span>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Atualização Obrigatória</h2>
+            <p class="text-xs text-slate-500 mt-1">Por segurança institucional, defina uma nova senha individual para continuar[cite: 10].</p>
         </div>
 
-        <form method="POST" action="{{ url_for('auth.trocar_senha') }}" class="form-login">
-            <div class="form-grupo">
-                <label for="nova_senha">Nova Senha (mínimo 6 caracteres):</label>
-                <input type="password" name="nova_senha" id="nova_senha" required minlength="6" autofocus placeholder="Digite sua nova senha">
+        <form method="POST" action="{{ url_for('auth.trocar_senha') }}" class="space-y-5">
+            <div>
+                <label for="nova_senha" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Nova Senha (mínimo 6 caracteres):</label>
+                <input type="password" name="nova_senha" id="nova_senha" required minlength="6" autofocus placeholder="Digite sua nova senha"
+                       class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
             </div>
 
-            <div class="form-grupo">
-                <label for="confirmacao">Confirme a Nova Senha:</label>
-                <input type="password" name="confirmacao" id="confirmacao" required minlength="6" placeholder="Repita a nova senha">
+            <div>
+                <label for="confirmacao" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Confirme a Nova Senha:</label>
+                <input type="password" name="confirmacao" id="confirmacao" required minlength="6" placeholder="Repita a nova senha"
+                       class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Salvar Nova Senha</button>
+            <button type="submit" class="w-full py-3 px-4 rounded-lg bg-abruem-800 text-white font-semibold text-sm hover:bg-abruem-900 shadow transition flex justify-center">
+                Salvar Nova Senha
+            </button>
         </form>
     </div>
 </div>

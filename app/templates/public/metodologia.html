@@ -3,63 +3,70 @@
 {% block title %}Dicionário Metodológico — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <h1>Metodologia e Catálogo de Indicadores</h1>
-    <p>Regras de cálculo, classificação de agregação e princípios adotados pela Câmara de Gestão e Governança.</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Metodologia e Catálogo de Indicadores</h1>
+    <p class="text-sm text-slate-500 mt-1">Regras de cálculo, classificação de agregação e princípios adotados pela Câmara de Gestão e Governança.</p>
 </div>
 
-<div class="card-aviso-metodologico">
-    <h3>Princípios Operacionais da Base</h3>
-    <ul>
-        <li><strong>Ausência nunca vira zero:</strong> Indicadores sem informação declarada permanecem em branco e não participam das medianas.</li>
-        <li><strong>Arredondamento Padrão BR:</strong> Valores monetários e dízimas são arredondados rigorosamente em duas casas decimais.</li>
-        <li><strong>Isolamento de Estágios:</strong> Dotação inicial, empenho, liquidação e pagamento jamais são equiparados.</li>
+<!-- Card de Princípios Metodológicos -->
+<div class="bg-blue-50/70 border-l-4 border-abruem-500 p-6 rounded-r-xl mb-10 shadow-sm">
+    <h3 class="text-sm font-bold text-abruem-900 uppercase tracking-wider mb-2">Princípios Operacionais da Base</h3>
+    <ul class="space-y-1.5 text-sm text-abruem-950">
+        <li><strong>Ausência nunca vira zero:</strong> Indicadores não declarados permanecem nulos e não entram no cômputo das medianas.</li>
+        <li><strong>Arredondamento Padrão BR:</strong> Valores monetários e dízimas são arredondados a 2 casas decimais.</li>
+        <li><strong>Isolamento de Estágios:</strong> Dotação inicial, empenho, liquidação e pagamento nunca são equiparados.</li>
     </ul>
 </div>
 
+<!-- Tabelas por Dimensão -->
 {% for dimensao, lista in dimensoes.items() %}
-<div class="grupo-dimensao">
-    <h2 class="titulo-dimensao">{{ dimensao }}</h2>
-    <div class="tabela-container">
-        <table class="tabela-dados">
-            <thead>
-                <tr>
-                    <th style="width: 15%;">Código</th>
-                    <th style="width: 35%;">Indicador</th>
-                    <th style="width: 15%;">Tipo de Dado</th>
-                    <th style="width: 15%;">Origem</th>
-                    <th style="width: 20%;">Fórmula de Cálculo</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in lista %}
-                <tr>
-                    <td><code>{{ item.indicador.codigo }}</code></td>
-                    <td>
-                        <strong>{{ item.indicador.nome }}</strong>
-                        {% if item.indicador.descricao %}
-                            <br><small class="text-mutado">{{ item.indicador.descricao }}</small>
-                        {% endif %}
-                    </td>
-                    <td>{{ item.indicador.tipo_dado }}</td>
-                    <td>
-                        {% if item.indicador.is_calculado() %}
-                            <span class="badge-calculado">Calculado</span>
-                        {% else %}
-                            <span class="badge-informado">Informado</span>
-                        {% endif %}
-                    </td>
-                    <td>
-                        {% if item.regra %}
-                            <code>{{ item.regra.formula }}</code>
-                        {% else %}
-                            <span class="text-mutado">Dado Primário</span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="mb-10">
+    <h2 class="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
+        <span class="h-2.5 w-2.5 rounded-full bg-abruem-500"></span>
+        {{ dimensao }}
+    </h2>
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                    <tr>
+                        <th scope="col" class="px-6 py-3.5 w-1/6">Código</th>
+                        <th scope="col" class="px-6 py-3.5 w-2/6">Indicador</th>
+                        <th scope="col" class="px-6 py-3.5 w-1/6">Tipo de Dado</th>
+                        <th scope="col" class="px-6 py-3.5 w-1/6">Origem</th>
+                        <th scope="col" class="px-6 py-3.5 w-1/6">Fórmula de Cálculo</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for item in lista %}
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="px-6 py-4 font-mono text-xs font-semibold text-abruem-800">{{ item.indicador.codigo }}</td>
+                        <td class="px-6 py-4">
+                            <strong class="text-slate-900 block">{{ item.indicador.nome }}</strong>
+                            {% if item.indicador.descricao %}
+                                <span class="text-xs text-slate-400 mt-0.5 block">{{ item.indicador.descricao }}</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-xs font-medium text-slate-700">{{ item.indicador.tipo_dado }}</td>
+                        <td class="px-6 py-4">
+                            {% if item.indicador.is_calculado() %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">Calculado</span>
+                            {% else %}
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">Informado</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-xs">
+                            {% if item.regra %}
+                                <code class="bg-slate-100 px-2 py-1 rounded text-slate-800 font-mono">{{ item.regra.formula }}</code>
+                            {% else %}
+                                <span class="text-slate-400">Dado Primário</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endfor %}

@@ -3,58 +3,66 @@
 {% block title %}Painel da Câmara — Administração{% endblock %}
 
 {% block content %}
-<div class="admin-layout">
+<div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="admin-conteudo">
-        <div class="header-pagina">
-            <h1>Ambiente de Gestão da Câmara</h1>
-            <p>Acompanhamento de submissões pendentes, catálogo institucional e integridade da base.</p>
+    <div class="flex-1 w-full space-y-8">
+        <div class="border-b border-slate-200 pb-5">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Ambiente de Gestão da Câmara</h1>
+            <p class="text-sm text-slate-500 mt-1">Acompanhamento de submissões pendentes, catálogo institucional e integridade da base.</p>
         </div>
 
-        <div class="grid-resumo-estatistico">
-            <div class="card-estatistico">
-                <h4>Fila de Submissões</h4>
-                <div class="valor-destaque">{{ submissoes | length }}</div>
-                <small>Registros aguardando parecer ou validação</small>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Fila de Submissões</span>
+                    <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ submissoes | length }}</div>
+                    <p class="text-xs text-slate-500 mt-1">Registros aguardando parecer ou homologação</p>
+                </div>
+                <span class="p-2.5 rounded-lg bg-amber-50 text-amber-600 text-xs font-bold uppercase">Pendente</span>
             </div>
-            <div class="card-estatistico">
-                <h4>Controle Operacional</h4>
-                <p style="margin-top: 10px; font-size: 0.9rem; color: #475569;">
-                    Valide os lotes de dados informados pelas universidades para que passem a alimentar automaticamente os painéis públicos da Rede ABRUEM.
+
+            <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Controle Operacional</span>
+                <p class="text-xs text-slate-600 mt-2 leading-relaxed">
+                    Valide os lotes enviados pelas instituições filiadas para alimentar automaticamente os painéis analíticos e comparativos públicos da Rede ABRUEM.
                 </p>
             </div>
         </div>
 
-        <div class="card-painel-perfil margem-topo">
-            <div class="titulo-com-acao" style="display: flex; justify-content: space-between; align-items: center;">
-                <h3>Últimas Submissões Recebidas</h3>
-                <a href="{{ url_for('admin.submissoes') }}" class="btn btn-sm btn-outline">Ver Fila Completa</a>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-slate-50/50 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-800">Últimas Submissões Recebidas</h3>
+                <a href="{{ url_for('admin.submissoes') }}" class="text-xs font-semibold text-abruem-600 hover:text-abruem-800 transition">Ver Fila Completa &rarr;</a>
             </div>
             
-            <div class="tabela-container">
-                <table class="tabela-dados">
-                    <thead>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         <tr>
-                            <th>Instituição</th>
-                            <th>Indicador</th>
-                            <th>Ano</th>
-                            <th class="text-right">Valor</th>
-                            <th>Status</th>
+                            <th scope="col" class="px-6 py-3.5">Instituição</th>
+                            <th scope="col" class="px-6 py-3.5">Indicador</th>
+                            <th scope="col" class="px-6 py-3.5 text-center">Ano</th>
+                            <th scope="col" class="px-6 py-3.5 text-right">Valor</th>
+                            <th scope="col" class="px-6 py-3.5 text-center">Status</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="divide-y divide-slate-100">
                         {% for s in submissoes[:5] %}
-                        <tr>
-                            <td><strong>{{ s.universidade_sigla }}</strong></td>
-                            <td>{{ s.indicador_nome }}</td>
-                            <td>{{ s.ano_referencia }}</td>
-                            <td class="text-right">{{ s.valor_numerico | numero_br(2) }}</td>
-                            <td><span class="badge-status-enviado">{{ s.status_dado }}</span></td>
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-900">{{ s.universidade_sigla }}</td>
+                            <td class="px-6 py-4 text-slate-800">{{ s.indicador_nome }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ s.ano_referencia }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold text-slate-900">{{ s.valor_numerico | numero_br(2) }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">{{ s.status_dado }}</span>
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="text-center">Nenhuma submissão pendente de análise no momento.</td>
+                            <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Nenhuma submissão pendente de análise no momento.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

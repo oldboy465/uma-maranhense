@@ -3,34 +3,35 @@
 {% block title %}Carga em Massa — Câmara ABRUEM{% endblock %}
 
 {% block content %}
-<div class="admin-layout">
+<div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="admin-conteudo">
-        <div class="header-pagina">
-            <h1>Carga de Dados em Massa</h1>
-            <p>Importação transacional de planilhas de coleta institucional (.csv ou .xlsx).</p>
+    <div class="flex-1 w-full space-y-8">
+        <div class="border-b border-slate-200 pb-5">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Carga de Dados em Massa</h1>
+            <p class="text-sm text-slate-500 mt-1">Importação transacional de planilhas de coleta institucional (.csv ou .xlsx).</p>
         </div>
 
-        <div class="card-aviso-metodologico">
-            <h3>Regras de Consistência e Importação</h3>
-            <ul>
-                <li><strong>Colunas Obrigatórias:</strong> <code>universidade_id</code>, <code>indicador_id</code>, <code>ano_referencia</code>, <code>valor</code>, <code>status_dado</code>.</li>
-                <li><strong>Tratamento de Erros:</strong> A importação é atômica; qualquer linha inválida ou com dados corrompidos aborta a operação por completo.</li>
+        <div class="bg-blue-50/70 border-l-4 border-abruem-500 p-6 rounded-r-xl shadow-sm space-y-2">
+            <h3 class="text-sm font-bold text-abruem-900 uppercase tracking-wider">Regras de Consistência e Importação</h3>
+            <ul class="space-y-1.5 text-xs text-abruem-950">
+                <li><strong>Colunas Obrigatórias:</strong> <code class="bg-white/80 px-1.5 py-0.5 rounded font-mono text-abruem-800">universidade_id</code>, <code class="bg-white/80 px-1.5 py-0.5 rounded font-mono text-abruem-800">indicador_id</code>, <code class="bg-white/80 px-1.5 py-0.5 rounded font-mono text-abruem-800">ano_referencia</code>, <code class="bg-white/80 px-1.5 py-0.5 rounded font-mono text-abruem-800">valor</code>, <code class="bg-white/80 px-1.5 py-0.5 rounded font-mono text-abruem-800">status_dado</code>.</li>
+                <li><strong>Tratamento de Erros:</strong> A importação é atômica; qualquer inconsistência aborta a operação por completo.</li>
                 <li><strong>Registros Existentes:</strong> Registros já validados não são sobrescritos silenciosamente.</li>
             </ul>
         </div>
 
-        <div class="card-painel-perfil margem-topo">
-            <h3>Enviar Arquivo</h3>
-            <form method="POST" action="{{ url_for('admin.submissoes') }}" enctype="multipart/form-data" class="form-importacao">
-                <div class="form-grupo">
-                    <label for="arquivo">Selecione o arquivo (.csv ou .xlsx):</label>
-                    <input type="file" name="arquivo" id="arquivo" accept=".csv, .xlsx" required>
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm max-w-xl">
+            <h3 class="text-sm font-bold text-slate-900 mb-4">Enviar Arquivo de Coleta</h3>
+            <form method="POST" action="{{ url_for('admin.submissoes') }}" enctype="multipart/form-data" class="space-y-5">
+                <div>
+                    <label for="arquivo" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Selecione a planilha (.csv ou .xlsx):</label>
+                    <input type="file" name="arquivo" id="arquivo" accept=".csv, .xlsx" required
+                           class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-abruem-50 file:text-abruem-700 hover:file:bg-abruem-100 border border-slate-200 rounded-lg cursor-pointer bg-slate-50/50">
                 </div>
-                <div class="botoes-acao" style="margin-top: 15px;">
-                    <button type="submit" class="btn btn-primary">Processar Importação</button>
-                </div>
+                <button type="submit" class="inline-flex items-center px-5 py-2.5 rounded-lg bg-abruem-800 text-white font-semibold text-sm hover:bg-abruem-900 shadow-sm transition">
+                    Processar Importação
+                </button>
             </form>
         </div>
     </div>

@@ -3,63 +3,88 @@
 {% block title %}Força da Rede — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<section class="hero-section">
-    <div class="hero-content">
-        <span class="badge-institucional">Câmara de Gestão e Governança da ABRUEM</span>
-        <h1 class="hero-title">A Força das Universidades Estaduais e Municipais</h1>
-        <p class="hero-desc">
+<!-- Hero Section -->
+<section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-abruem-800 via-slate-900 to-slate-950 p-8 sm:p-12 mb-10 text-white shadow-xl">
+    <div class="relative z-10 max-w-3xl">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-abruem-100 border border-white/20 uppercase tracking-wider mb-4">
+            Câmara de Gestão e Governança da ABRUEM
+        </span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
+            A Força das Universidades Estaduais e Municipais
+        </h1>
+        <p class="text-slate-300 text-base sm:text-lg leading-relaxed mb-6">
             Ambiente analítico integrado para acompanhamento estratégico de indicadores, orçamentos e impacto social de {{ total_universidades }} instituições de ensino superior em todo o Brasil.
         </p>
-        <div class="hero-meta">
-            <span>Exercício de Referência Consolidado: <strong>{{ ano_destaque }}</strong></span>
+        <div class="inline-flex items-center gap-2 text-xs font-medium text-abruem-100/90 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+            <span>Exercício de Referência Consolidado:</span>
+            <span class="font-bold text-white">{{ ano_destaque }}</span>
         </div>
     </div>
+    <!-- Detalhe decorativo de fundo -->
+    <div class="absolute -right-12 -bottom-12 w-96 h-96 bg-abruem-500/10 rounded-full blur-3xl pointer-events-none"></div>
 </section>
 
-<section class="cards-grid-indicadores">
-    <div class="card-indicador">
-        <span class="card-rotulo">Estudantes de Graduação</span>
-        <div class="card-valor">{{ totais.estudantes.valor | numero_br(0) }}</div>
-        <span class="card-subtexto">Matrículas ativas declaradas ({{ totais.estudantes.n }} instituições)</span>
+<!-- Grid de Indicadores Principais -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Estudantes de Graduação</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.estudantes.valor | numero_br(0) }}</div>
+        <span class="text-xs text-slate-500">Matrículas ativas declaradas ({{ totais.estudantes.n }} instituições)</span>
     </div>
 
-    <div class="card-indicador">
-        <span class="card-rotulo">Orçamento Executado</span>
-        <div class="card-valor">{{ totais.orcamento.valor | moeda_br }}</div>
-        <span class="card-subtexto">Despesa liquidada verificada ({{ totais.orcamento.n }} instituições)</span>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.orcamento.valor | moeda_br }}</div>
+        <span class="text-xs text-slate-500">Despesa liquidada verificada ({{ totais.orcamento.n }} instituições)</span>
     </div>
 
-    <div class="card-indicador">
-        <span class="card-rotulo">Docentes Efetivos e Temporários</span>
-        <div class="card-valor">{{ totais.docentes.valor | numero_br(0) }}</div>
-        <span class="card-subtexto">Corpo docente em atividade ({{ totais.docentes.n }} instituições)</span>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Corpo Docente</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.docentes.valor | numero_br(0) }}</div>
+        <span class="text-xs text-slate-500">Efetivos e temporários ({{ totais.docentes.n }} instituições)</span>
     </div>
 
-    <div class="card-indicador">
-        <span class="card-rotulo">Cursos de Graduação</span>
-        <div class="card-valor">{{ totais.cursos.valor | numero_br(0) }}</div>
-        <span class="card-subtexto">Presenciais e EaD ativos ({{ totais.cursos.n }} instituições)</span>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
+        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Cursos de Graduação</span>
+        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.cursos.valor | numero_br(0) }}</div>
+        <span class="text-xs text-slate-500">Presenciais e EaD ativos ({{ totais.cursos.n }} instituições)</span>
     </div>
 </section>
 
-<section class="secao-atalhos">
-    <h2>Navegação Rápida</h2>
-    <div class="grid-atalhos">
-        <a href="{{ url_for('regioes.index') }}" class="card-atalho">
-            <h3>Visão por Região</h3>
-            <p>Acompanhe agregações e medianas por macrorregiões do Brasil.</p>
+<!-- Navegação Rápida -->
+<section>
+    <h2 class="text-xl font-bold text-slate-900 mb-6">Módulos de Acesso Rápido</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <a href="{{ url_for('regioes.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Visão por Região</h3>
+                <p class="text-sm text-slate-500">Acompanhe agregações e medianas divididas por macrorregiões do Brasil.</p>
+            </div>
+            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
         </a>
-        <a href="{{ url_for('universidades.lista') }}" class="card-atalho">
-            <h3>Perfil das Filiadas</h3>
-            <p>Consulte a série histórica e responsáveis institucionais de cada universidade.</p>
+
+        <a href="{{ url_for('universidades.lista') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Perfil das Filiadas</h3>
+                <p class="text-sm text-slate-500">Série histórica de indicadores e contatos de gestão de cada instituição.</p>
+            </div>
+            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
         </a>
-        <a href="{{ url_for('comparador.index') }}" class="card-atalho">
-            <h3>Comparador Analítico</h3>
-            <p>Compare duas universidades lado a lado frente às referências da rede.</p>
+
+        <a href="{{ url_for('comparador.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Comparador Analítico</h3>
+                <p class="text-sm text-slate-500">Análise lado a lado entre universidades frente aos parâmetros da rede.</p>
+            </div>
+            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
         </a>
-        <a href="{{ url_for('metodologia.index') }}" class="card-atalho">
-            <h3>Metodologia e Fórmulas</h3>
-            <p>Conheça os critérios de validação e o dicionário de fórmulas de cálculo.</p>
+
+        <a href="{{ url_for('metodologia.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
+            <div>
+                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Dicionário e Regras</h3>
+                <p class="text-sm text-slate-500">Critérios metodológicos, fórmulas matemáticas e regras de agregação.</p>
+            </div>
+            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
         </a>
     </div>
 </section>

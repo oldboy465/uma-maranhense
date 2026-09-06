@@ -3,29 +3,35 @@
 {% block title %}Dimensão Pessoas — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <span class="tag-dimensao">Dimensão</span>
-    <h1>Pessoas e Força de Trabalho</h1>
-    <p>Composição do quadro de docentes, corpo técnico-administrativo e relações funcionais[cite: 1].</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-2">Dimensão</span>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Pessoas e Força de Trabalho</h1>
+    <p class="text-sm text-slate-500 mt-1">Composição do quadro de docentes, corpo técnico-administrativo e relações funcionais[cite: 1].</p>
 </div>
 
-<div class="grid-resumo-estatistico">
-    <div class="card-estatistico">
-        <h4>Corpo Docente Total (Rede)</h4>
-        <div class="valor-destaque">{{ total_docentes | numero_br(0) }}</div>
-        <small>Docentes efetivos e temporários somados no exercício</small>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Corpo Docente Total (Rede)</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_docentes | numero_br(0) }}</div>
+            <p class="text-xs text-slate-500 mt-1">Docentes efetivos e temporários somados no exercício</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-abruem-50 text-abruem-600 text-sm font-semibold">Docentes</span>
     </div>
 
-    <div class="card-estatistico">
-        <h4>Técnicos-Administrativos</h4>
-        <div class="valor-destaque">{{ total_tecnicos | numero_br(0) }}</div>
-        <small>Servidores do quadro técnico em atividade</small>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Técnicos-Administrativos</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_tecnicos | numero_br(0) }}</div>
+            <p class="text-xs text-slate-500 mt-1">Servidores do quadro técnico em atividade</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold">Técnicos</span>
     </div>
 </div>
 
-<div class="card-aviso-metodologico margem-topo">
-    <h3>Razão Estudantes por Docente</h3>
-    <p>
+<div class="bg-blue-50/70 border-l-4 border-abruem-500 p-6 rounded-r-xl shadow-sm">
+    <h3 class="text-sm font-bold text-abruem-900 uppercase tracking-wider mb-1">Razão Estudantes por Docente</h3>
+    <p class="text-sm text-abruem-950 leading-relaxed">
         A relação estudante/docente é classificada metodologicamente como uma <strong>Razão</strong>: nunca é somada e deve ser analisada prioritariamente por meio de sua mediana de rede para prevenir distorções provocadas por valores extremos[cite: 1].
     </p>
 </div>

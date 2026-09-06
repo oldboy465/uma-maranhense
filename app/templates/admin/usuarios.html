@@ -3,54 +3,56 @@
 {% block title %}Gestão de Usuários — Câmara ABRUEM{% endblock %}
 
 {% block content %}
-<div class="admin-layout">
+<div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="admin-conteudo">
-        <div class="header-pagina">
-            <h1>Gestão de Usuários do Sistema</h1>
-            <p>Controle de credenciais, perfis de acesso e vinculação institucional às universidades filiadas.</p>
+    <div class="flex-1 w-full space-y-8">
+        <div class="border-b border-slate-200 pb-5">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Gestão de Usuários do Sistema</h1>
+            <p class="text-sm text-slate-500 mt-1">Controle de credenciais, perfis de acesso e vinculação institucional às filiadas[cite: 10].</p>
         </div>
 
-        <div class="tabela-container margem-topo">
-            <table class="tabela-dados">
-                <thead>
-                    <tr>
-                        <th style="width: 25%;">Nome</th>
-                        <th style="width: 25%;">E-mail Institucional</th>
-                        <th style="width: 20%;">Perfil de Acesso</th>
-                        <th style="width: 15%;">Instituição Vinculada</th>
-                        <th style="width: 15%; text-align: center;">Situação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for u in usuarios %}
-                    <tr>
-                        <td><strong>{{ u.nome }}</strong></td>
-                        <td>{{ u.email }}</td>
-                        <td>
-                            {% if u.perfil == 'ADMIN_CAMARA' %}
-                                <span class="badge-tipo">Administrador Câmara</span>
-                            {% else %}
-                                <span class="badge-informado">Gestor Institucional</span>
-                            {% endif %}
-                        </td>
-                        <td>{{ u.universidade_sigla or 'Câmara Geral' }}</td>
-                        <td style="text-align: center;">
-                            {% if u.ativo %}
-                                <span class="badge-sucesso">Ativo</span>
-                            {% else %}
-                                <span class="badge-perigo">Inativo</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="5" class="text-center">Nenhum usuário cadastrado.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5 w-1/4">Nome</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/4">E-mail Institucional</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/5">Perfil de Acesso</th>
+                            <th scope="col" class="px-6 py-3.5">Instituição</th>
+                            <th scope="col" class="px-6 py-3.5 text-center">Situação</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for u in usuarios %}
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-900">{{ u.nome }}</td>
+                            <td class="px-6 py-4 text-xs font-mono text-slate-600">{{ u.email }}</td>
+                            <td class="px-6 py-4">
+                                {% if u.perfil == 'ADMIN_CAMARA' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">Administrador Câmara</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">Gestor Institucional</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 font-semibold text-slate-700">{{ u.universidade_sigla or 'Câmara Geral' }}</td>
+                            <td class="px-6 py-4 text-center">
+                                {% if u.ativo %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Ativo</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Inativo</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum usuário cadastrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

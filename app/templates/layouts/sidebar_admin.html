@@ -1,27 +1,28 @@
-<aside class="admin-sidebar">
-    <div class="sidebar-header">
-        <h3>Painel da Câmara</h3>
-        <span class="sidebar-role">Administração</span>
+<aside class="w-full lg:w-64 bg-white rounded-xl border border-slate-200 p-5 shadow-sm shrink-0">
+    <div class="border-b border-slate-100 pb-4 mb-4">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-abruem-600 bg-abruem-50 px-2 py-0.5 rounded border border-abruem-100">Administração</span>
+        <h3 class="text-base font-bold text-slate-900 mt-2">Painel da Câmara</h3>
     </div>
-    <ul class="sidebar-menu">
-        <li>
-            <a href="{{ url_for('admin.painel') }}">Visão Geral</a>
-        </li>
-        <li>
-            <a href="{{ url_for('admin.submissoes') }}">Fila de Validação</a>
-        </li>
-        <li>
-            <a href="{{ url_for('relatorios.pendencias') }}">Relatório de Pendências</a>
-        </li>
-        <li>
-            <a href="{{ url_for('admin.auditoria') }}">Trilha de Auditoria</a>
-        </li>
-        <li class="sidebar-divider"></li>
-        <li>
-            <a href="{{ url_for('minha_universidade.painel') }}">Central de Atualização</a>
-        </li>
-        <li>
-            <a href="{{ url_for('home.index') }}">Retornar ao Portal</a>
-        </li>
-    </ul>
+    <nav class="space-y-1">
+        <a href="{{ url_for('admin.painel') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-abruem-800 transition">
+            Visão Geral
+        </a>
+        <a href="{{ url_for('admin.submissoes') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-abruem-800 transition">
+            Fila de Validação
+        </a>
+        <a href="{{ url_for('relatorios.pendencias') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-abruem-800 transition">
+            Relatório de Pendências
+        </a>
+        <a href="{{ url_for('admin.auditoria') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:text-abruem-800 transition">
+            Trilha de Auditoria
+        </a>
+        <div class="pt-3 mt-3 border-t border-slate-100 space-y-1">
+            <a href="{{ url_for('minha_universidade.painel') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:bg-slate-50 hover:text-abruem-800 transition">
+                Central de Atualização
+            </a>
+            <a href="{{ url_for('home.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-slate-400 hover:text-slate-600 transition">
+                &larr; Retornar ao Portal
+            </a>
+        </div>
+    </nav>
 </aside>

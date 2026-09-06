@@ -3,96 +3,114 @@
 {% block title %}Central de Atualização — {{ universidade.sigla }}{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <div class="titulo-com-badge">
-        <h1>Central de Atualização Institucional</h1>
-        <span class="badge-universidade">{{ universidade.sigla }}</span>
-    </div>
-    <p>Preencha os indicadores requeridos. Ao enviar, o dado é submetido à validação metodológica da Câmara.</p>
-</div>
-
-<div class="filtro-barra">
-    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="form-filtros">
-        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-        <div class="form-grupo">
-            <label for="ano">Exercício de Coleta:</label>
-            <select name="ano" id="ano" onchange="this.form.submit()">
-                {% for a in [2024, 2023, 2022] %}
-                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
-                {% endfor %}
-            </select>
+<div class="mb-8 border-b border-slate-200 pb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase">
+                {{ universidade.sigla }}
+            </span>
+            <span class="text-xs text-slate-400">{{ universidade.nome }}</span>
         </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Central de Atualização Institucional</h1>
+        <p class="text-sm text-slate-500 mt-0.5">Preencha os dados requeridos. Ao enviar, o lote entra na fila de validação da Câmara[cite: 10].</p>
+    </div>
+
+    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="flex items-center gap-2">
+        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+        <label for="ano" class="sr-only">Exercício:</label>
+        <select name="ano" id="ano" onchange="this.form.submit()" 
+                class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+            {% for a in [2024, 2023, 2022] %}
+                <option value="{{ a }}" {% if a == ano %}selected{% endif %}>Exercício {{ a }}</option>
+            {% endfor %}
+        </select>
     </form>
 </div>
 
-<div class="tabela-container">
-    <table class="tabela-dados">
-        <thead>
-            <tr>
-                <th style="width: 25%;">Indicador</th>
-                <th style="width: 15%;">Tipo</th>
-                <th style="width: 20%;">Valor Declarado</th>
-                <th style="width: 15%;">Status</th>
-                <th style="width: 25%;">Ação / Submissão</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for ind in indicadores %}
-            {% set reg = registros.get(ind.id) %}
-            <tr>
-                <td>
-                    <strong>{{ ind.nome }}</strong>
-                    <br><small class="text-mutado">Código: {{ ind.codigo }}</small>
-                </td>
-                <td>{{ ind.tipo_dado }}</td>
-                <td>
-                    {% if ind.is_calculado() %}
-                        <span class="valor-calculado">
-                            {% if reg and reg.valor_numerico is not none %}
-                                {% if ind.tipo_dado == 'MONETARIO' %}{{ reg.valor_numerico | moeda_br }}{% else %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}
-                            {% else %}
-                                <em>Calculado automaticamente</em>
-                            {% endif %}
-                        </span>
-                    {% else %}
-                        <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-inline-valor" id="form-{{ ind.id }}">
-                            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-                            <input type="hidden" name="indicador_id" value="{{ ind.id }}">
-                            <input type="hidden" name="ano_referencia" value="{{ ano }}">
-                            
-                            <input type="text" name="valor" 
-                                   value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}"
-                                   class="input-valor" 
-                                   placeholder="0,00"
-                                   {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] %}disabled{% endif %}>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if reg %}
-                        <span class="badge-status-{{ reg.status_dado.lower() }}">{{ reg.status_dado }}</span>
-                        {% if reg.status_dado == 'DEVOLVIDO' and reg.parecer_devolucao %}
-                            <br><small class="text-perigo">Motivo: {{ reg.parecer_devolucao }}</small>
-                        {% endif %}
-                    {% else %}
-                        <span class="badge-status-vazio">PENDENTE</span>
-                    {% endif %}
-                </td>
-                <td>
-                    {% if not ind.is_calculado() %}
-                        {% if not reg or reg.status_dado in ['RASCUNHO', 'DEVOLVIDO'] %}
-                            <button type="submit" name="acao" value="salvar_rascunho" class="btn btn-sm btn-outline">Rascunho</button>
-                            <button type="submit" name="acao" value="enviar" class="btn btn-sm btn-primary">Enviar</button>
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5 w-1/4">Indicador</th>
+                    <th scope="col" class="px-6 py-3.5 w-1/12">Tipo</th>
+                    <th scope="col" class="px-6 py-3.5 w-1/4">Valor Declarado</th>
+                    <th scope="col" class="px-6 py-3.5 text-center w-1/6">Status</th>
+                    <th scope="col" class="px-6 py-3.5 text-center w-1/6">Ação / Envio</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for ind in indicadores %}
+                {% set reg = registros.get(ind.id) %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4">
+                        <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
+                        <span class="font-mono text-xs text-slate-400 block">{{ ind.codigo }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-xs text-slate-500">{{ ind.tipo_dado }}</td>
+                    <td class="px-6 py-4">
+                        {% if ind.is_calculado() %}
+                            <span class="font-semibold text-slate-800 text-sm">
+                                {% if reg and reg.valor_numerico is not none %}
+                                    {% if ind.tipo_dado == 'MONETARIO' %}{{ reg.valor_numerico | moeda_br }}{% else %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}
+                                {% else %}
+                                    <em class="text-xs text-slate-400 font-normal">Calculado automaticamente</em>
+                                {% endif %}
+                            </span>
                         {% else %}
-                            <small class="text-sucesso">Submetido para validação</small>
+                            <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-inline-valor" id="form-{{ ind.id }}">
+                                <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+                                <input type="hidden" name="indicador_id" value="{{ ind.id }}">
+                                <input type="hidden" name="ano_referencia" value="{{ ano }}">
+                                
+                                <input type="text" name="valor" 
+                                       value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}"
+                                       class="input-valor w-36 rounded-md border-slate-300 text-xs font-semibold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-1.5 px-2" 
+                                       placeholder="0,00"
+                                       {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] %}disabled{% endif %}>
                         {% endif %}
-                        </form>
-                    {% else %}
-                        <small class="text-mutado">Automático pelo Motor</small>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if reg %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                {% if reg.status_dado == 'VALIDADO' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                                {% elif reg.status_dado == 'ENVIADO' %} bg-amber-50 text-amber-700 border border-amber-200
+                                {% elif reg.status_dado == 'DEVOLVIDO' %} bg-rose-50 text-rose-700 border border-rose-200
+                                {% else %} bg-slate-100 text-slate-700 border border-slate-200 {% endif %}">
+                                {{ reg.status_dado }}
+                            </span>
+                            {% if reg.status_dado == 'DEVOLVIDO' and reg.parecer_devolucao %}
+                                <span class="text-[11px] text-rose-600 block mt-1 leading-tight font-medium">Motivo: {{ reg.parecer_devolucao }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-400">PENDENTE</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        {% if not ind.is_calculado() %}
+                            {% if not reg or reg.status_dado in ['RASCUNHO', 'DEVOLVIDO'] %}
+                                <div class="flex items-center justify-center gap-1.5">
+                                    <button type="submit" name="acao" value="salvar_rascunho" 
+                                            class="px-2.5 py-1 rounded border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm">
+                                        Rascunho
+                                    </button>
+                                    <button type="submit" name="acao" value="enviar" 
+                                            class="px-2.5 py-1 rounded bg-abruem-800 text-white text-xs font-semibold hover:bg-abruem-900 transition shadow-sm">
+                                        Enviar
+                                    </button>
+                                </div>
+                            {% else %}
+                                <span class="text-xs font-semibold text-emerald-600">Submetido</span>
+                            {% endif %}
+                            </form>
+                        {% else %}
+                            <span class="text-xs text-slate-400 font-medium">Automático</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

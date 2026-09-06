@@ -3,52 +3,62 @@
 {% block title %}Registros de Dados — Câmara ABRUEM{% endblock %}
 
 {% block content %}
-<div class="admin-layout">
+<div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="admin-conteudo">
-        <div class="header-pagina">
-            <h1>Gestão Geral de Registros</h1>
-            <p>Visualização e auditoria individual de fatos gravados na base de dados.</p>
+    <div class="flex-1 w-full space-y-8">
+        <div class="border-b border-slate-200 pb-5">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Gestão Geral de Registros</h1>
+            <p class="text-sm text-slate-500 mt-1">Visualização e auditoria individual de fatos gravados na base de dados[cite: 10].</p>
         </div>
 
-        <div class="tabela-container margem-topo">
-            <table class="tabela-dados">
-                <thead>
-                    <tr>
-                        <th style="width: 15%;">Instituição</th>
-                        <th style="width: 30%;">Indicador</th>
-                        <th style="width: 10%;">Ano</th>
-                        <th style="width: 15%; text-align: right;">Valor</th>
-                        <th style="width: 15%;">Status</th>
-                        <th style="width: 15%;">Atualizado Em</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for r in registros %}
-                    <tr>
-                        <td><strong>{{ r.universidade_sigla }}</strong></td>
-                        <td>{{ r.indicador_nome }}</td>
-                        <td>{{ r.ano_referencia }}</td>
-                        <td class="text-right">
-                            {% if r.valor_numerico is not none %}
-                                {{ r.valor_numerico | numero_br(2) }}
-                            {% else %}
-                                <span class="text-mutado">-</span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            <span class="badge-status-{{ r.status_dado.lower() }}">{{ r.status_dado }}</span>
-                        </td>
-                        <td><small>{{ r.atualizado_em }}</small></td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center">Nenhum registro encontrado.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Instituição</th>
+                            <th scope="col" class="px-6 py-3.5 w-2/5">Indicador</th>
+                            <th scope="col" class="px-6 py-3.5 text-center w-1/12">Ano</th>
+                            <th scope="col" class="px-6 py-3.5 text-right w-1/6">Valor</th>
+                            <th scope="col" class="px-6 py-3.5 text-center w-1/6">Status</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Atualizado Em</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for r in registros %}
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-6 py-4 font-bold text-slate-900">{{ r.universidade_sigla }}</td>
+                            <td class="px-6 py-4 text-slate-800">{{ r.indicador_nome }}</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ r.ano_referencia }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-right font-bold text-slate-900">
+                                {% if r.valor_numerico is not none %}
+                                    {{ r.valor_numerico | numero_br(2) }}
+                                {% else %}
+                                    <span class="text-slate-300">-</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
+                                    {% if r.status_dado == 'VALIDADO' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                                    {% elif r.status_dado == 'ENVIADO' %} bg-amber-50 text-amber-700 border border-amber-200
+                                    {% elif r.status_dado == 'DEVOLVIDO' %} bg-rose-50 text-rose-700 border border-rose-200
+                                    {% else %} bg-slate-100 text-slate-700 border border-slate-200 {% endif %}">
+                                    {{ r.status_dado }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 font-mono text-xs text-slate-400">{{ r.atualizado_em }}</td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum registro encontrado.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

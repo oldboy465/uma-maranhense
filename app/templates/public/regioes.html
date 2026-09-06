@@ -3,101 +3,118 @@
 {% block title %}Análise Regional — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <h1>Análise Regional</h1>
-    <p>Agrupamentos de indicadores por região geográfica e exercício de coleta.</p>
-</div>
-
-<div class="filtro-barra">
-    <form method="GET" action="{{ url_for('regioes.index') }}" class="form-filtros">
-        <div class="form-grupo">
-            <label for="regiao">Região:</label>
-            <select name="regiao" id="regiao" onchange="this.form.submit()">
-                {% for r in regioes %}
-                    <option value="{{ r }}" {% if r == regiao_selecionada %}selected{% endif %}>{{ r }}</option>
-                {% endfor %}
-            </select>
+<div class="mb-8">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 pb-5">
+        <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Análise Regional</h1>
+            <p class="text-sm text-slate-500 mt-1">Agrupamentos de indicadores por região geográfica e exercício de coleta.</p>
         </div>
 
-        <div class="form-grupo">
-            <label for="ano">Exercício:</label>
-            <select name="ano" id="ano" onchange="this.form.submit()">
-                {% for a in [2024, 2023, 2022] %}
-                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
-                {% endfor %}
-            </select>
-        </div>
-    </form>
-</div>
+        <form method="GET" action="{{ url_for('regioes.index') }}" class="flex flex-wrap items-center gap-3">
+            <div>
+                <label for="regiao" class="sr-only">Região:</label>
+                <select name="regiao" id="regiao" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm font-medium text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                    {% for r in regioes %}
+                        <option value="{{ r }}" {% if r == regiao_selecionada %}selected{% endif %}>Região {{ r }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-<div class="grid-resumo-estatistico">
-    <div class="card-estatistico">
-        <h4>Orçamento Executado (Mediana Regional)</h4>
-        <div class="valor-destaque">
-            {% if stats_orc.mediana is not none %}
-                {{ stats_orc.mediana | moeda_br }}
-            {% else %}
-                <span class="text-mutado">Amostra insuficiente (n={{ stats_orc.n }})</span>
-            {% endif %}
-        </div>
-        <small>Instituições com dados no ano: {{ stats_orc.n }}</small>
-    </div>
-
-    <div class="card-estatistico">
-        <h4>Matrículas de Graduação (Mediana Regional)</h4>
-        <div class="valor-destaque">
-            {% if stats_mat.mediana is not none %}
-                {{ stats_mat.mediana | numero_br(0) }}
-            {% else %}
-                <span class="text-mutado">Amostra insuficiente (n={{ stats_mat.n }})</span>
-            {% endif %}
-        </div>
-        <small>Instituições com dados no ano: {{ stats_mat.n }}</small>
+            <div>
+                <label for="ano" class="sr-only">Exercício:</label>
+                <select name="ano" id="ano" onchange="this.form.submit()" class="rounded-lg border-slate-300 text-sm font-medium text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                    {% for a in [2024, 2023, 2022] %}
+                        <option value="{{ a }}" {% if a == ano %}selected{% endif %}>Exercício {{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
     </div>
 </div>
 
-<div class="tabela-container">
-    <table class="tabela-dados">
-        <thead>
-            <tr>
-                <th>Sigla</th>
-                <th>Nome da Instituição</th>
-                <th>UF</th>
-                <th class="text-right">Orçamento Executado (R$)</th>
-                <th class="text-right">Matrículas</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for item in dados_tabela %}
-            <tr>
-                <td><strong>{{ item.universidade.sigla }}</strong></td>
-                <td>{{ item.universidade.nome }}</td>
-                <td>{{ item.universidade.uf }}</td>
-                <td class="text-right">
-                    {% if item.orcamento is not none %}
-                        {{ item.orcamento | moeda_br }}
-                    {% else %}
-                        <span class="text-mutado">-</span>
-                    {% endif %}
-                </td>
-                <td class="text-right">
-                    {% if item.matriculas is not none %}
-                        {{ item.matriculas | numero_br(0) }}
-                    {% else %}
-                        <span class="text-mutado">-</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{{ url_for('universidades.perfil', sigla=item.universidade.sigla) }}" class="link-acao">Ver Perfil</a>
-                </td>
-            </tr>
-            {% else %}
-            <tr>
-                <td colspan="6" class="text-center">Nenhuma instituição com dados nesta região para o ano selecionado.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+<!-- Cards de Medianas Regionais -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado (Mediana)</span>
+            <div class="text-2xl sm:text-3xl font-extrabold text-abruem-800 mt-2">
+                {% if stats_orc.mediana is not none %}
+                    {{ stats_orc.mediana | moeda_br }}
+                {% else %}
+                    <span class="text-sm font-medium text-slate-400">Amostra insuficiente</span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Instituições apuradas no exercício: <strong>{{ stats_orc.n }}</strong></p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-abruem-50 text-abruem-600 text-sm font-semibold">BRL</span>
+    </div>
+
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Matrículas de Graduação (Mediana)</span>
+            <div class="text-2xl sm:text-3xl font-extrabold text-abruem-800 mt-2">
+                {% if stats_mat.mediana is not none %}
+                    {{ stats_mat.mediana | numero_br(0) }}
+                {% else %}
+                    <span class="text-sm font-medium text-slate-400">Amostra insuficiente</span>
+                {% endif %}
+            </div>
+            <p class="text-xs text-slate-500 mt-1">Instituições apuradas no exercício: <strong>{{ stats_mat.n }}</strong></p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold">Alunos</span>
+    </div>
+</div>
+
+<!-- Tabela de Instituições -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+    <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+        <h3 class="text-sm font-semibold text-slate-800">Instituições Filiadas — Região {{ regiao_selecionada }}</h3>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5">Sigla</th>
+                    <th scope="col" class="px-6 py-3.5">Nome da Instituição</th>
+                    <th scope="col" class="px-6 py-3.5">UF</th>
+                    <th scope="col" class="px-6 py-3.5 text-right">Orçamento Executado (R$)</th>
+                    <th scope="col" class="px-6 py-3.5 text-right">Matrículas</th>
+                    <th scope="col" class="px-6 py-3.5 text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for item in dados_tabela %}
+                <tr class="hover:bg-slate-50/80 transition-colors">
+                    <td class="px-6 py-4 font-bold text-slate-900">{{ item.universidade.sigla }}</td>
+                    <td class="px-6 py-4 text-slate-700">{{ item.universidade.nome }}</td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ item.universidade.uf }}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right font-medium text-slate-900">
+                        {% if item.orcamento is not none %}
+                            {{ item.orcamento | moeda_br }}
+                        {% else %}
+                            <span class="text-slate-300">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-right font-medium text-slate-900">
+                        {% if item.matriculas is not none %}
+                            {{ item.matriculas | numero_br(0) }}
+                        {% else %}
+                            <span class="text-slate-300">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <a href="{{ url_for('universidades.perfil', sigla=item.universidade.sigla) }}" class="text-xs font-semibold text-abruem-600 hover:text-abruem-800 transition">Ver Perfil &rarr;</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-8 text-center text-sm text-slate-400">Nenhuma instituição com dados nesta região para o ano selecionado.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
 </div>
 {% endblock %}

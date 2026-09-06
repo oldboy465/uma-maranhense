@@ -3,29 +3,35 @@
 {% block title %}Captação e Convênios — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <span class="tag-dimensao">Dimensão</span>
-    <h1>Captação e Convênios</h1>
-    <p>Instrumentos jurídicos de repasse, fomento científico e termos de cooperação da rede[cite: 1].</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-2">Dimensão</span>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Captação e Convênios</h1>
+    <p class="text-sm text-slate-500 mt-1">Instrumentos jurídicos de repasse, fomento científico e termos de cooperação da rede[cite: 1].</p>
 </div>
 
-<div class="grid-resumo-estatistico">
-    <div class="card-estatistico">
-        <h4>Volume Global Captado</h4>
-        <div class="valor-destaque">{{ total_global | moeda_br }}</div>
-        <small>Valor total pactuado nos instrumentos ativos</small>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Volume Global Captado</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_global | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Valor total pactuado nos instrumentos ativos</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-abruem-50 text-abruem-600 text-sm font-semibold">Pactuado</span>
     </div>
 
-    <div class="card-estatistico">
-        <h4>Recursos Já Liberados</h4>
-        <div class="valor-destaque">{{ total_liberado | moeda_br }}</div>
-        <small>Repasses financeiros efetivamente executados</small>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Recursos Já Liberados</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_liberado | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Repasses financeiros efetivamente executados</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold">Liberado</span>
     </div>
 </div>
 
-<div class="card-aviso-metodologico margem-topo">
-    <h3>Critério de Entrada</h3>
-    <p>
+<div class="bg-blue-50/70 border-l-4 border-abruem-500 p-6 rounded-r-xl shadow-sm">
+    <h3 class="text-sm font-bold text-abruem-900 uppercase tracking-wider mb-1">Critério de Entrada</h3>
+    <p class="text-sm text-abruem-950 leading-relaxed">
         Os instrumentos de captação e convênios são preenchidos diretamente pelas universidades ou pela administração da Câmara[cite: 1], contendo órgão concedente, número do termo, objeto e valores contratados[cite: 1].
     </p>
 </div>

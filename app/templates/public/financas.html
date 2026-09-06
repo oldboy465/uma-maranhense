@@ -3,29 +3,35 @@
 {% block title %}Dimensão Finanças — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="header-pagina">
-    <span class="tag-dimensao">Dimensão</span>
-    <h1>Finanças e Orçamento</h1>
-    <p>Execução orçamentária e financeira consolidada das universidades estaduais e municipais.</p>
+<div class="mb-8 border-b border-slate-200 pb-5">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-2">Dimensão</span>
+    <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Finanças e Orçamento</h1>
+    <p class="text-sm text-slate-500 mt-1">Execução orçamentária e financeira consolidada das universidades estaduais e municipais.</p>
 </div>
 
-<div class="grid-resumo-estatistico">
-    <div class="card-estatistico">
-        <h4>Orçamento Executado Global</h4>
-        <div class="valor-destaque">{{ total_liquidado | moeda_br }}</div>
-        <small>Total de despesa liquidada verificado no exercício</small>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado Global</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_liquidado | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Total de despesa liquidada verificado no exercício</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-abruem-50 text-abruem-600 text-sm font-semibold">Liquidado</span>
     </div>
 
-    <div class="card-estatistico">
-        <h4>Orçamento Autorizado da Rede</h4>
-        <div class="valor-destaque">{{ total_autorizado | moeda_br }}</div>
-        <small>Dotação orçamentária atualizada</small>
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex items-start justify-between">
+        <div>
+            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Autorizado da Rede</span>
+            <div class="text-3xl font-extrabold text-abruem-800 mt-2">{{ total_autorizado | moeda_br }}</div>
+            <p class="text-xs text-slate-500 mt-1">Dotação orçamentária atualizada</p>
+        </div>
+        <span class="p-2.5 rounded-lg bg-emerald-50 text-emerald-600 text-sm font-semibold">Autorizado</span>
     </div>
 </div>
 
-<div class="card-aviso-metodologico margem-topo">
-    <h3>Isolamento Rigoroso dos Estágios da Despesa</h3>
-    <p>
+<div class="bg-blue-50/70 border-l-4 border-abruem-500 p-6 rounded-r-xl shadow-sm">
+    <h3 class="text-sm font-bold text-abruem-900 uppercase tracking-wider mb-1">Isolamento Rigoroso dos Estágios da Despesa</h3>
+    <p class="text-sm text-abruem-950 leading-relaxed">
         Orçamento inicial, dotação autorizada, despesa empenhada, liquidada e paga nunca são equiparados[cite: 1]. As grandezas orçamentárias possuem comportamento de <strong>Fluxo</strong> (podem ser somadas entre instituições no mesmo exercício ou acumuladas nominalmente)[cite: 1].
     </p>
 </div>

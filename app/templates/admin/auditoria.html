@@ -3,52 +3,66 @@
 {% block title %}Trilha de Auditoria — Câmara ABRUEM{% endblock %}
 
 {% block content %}
-<div class="admin-layout">
+<div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="admin-conteudo">
-        <div class="header-pagina">
-            <h1>Trilha de Auditoria</h1>
-            <p>Registro imutável de todas as ações de atualização, validação e login realizadas no sistema.</p>
+    <div class="flex-1 w-full space-y-8">
+        <div class="border-b border-slate-200 pb-5">
+            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Trilha de Auditoria</h1>
+            <p class="text-sm text-slate-500 mt-1">Registro imutável de todas as ações de atualização, validação e login realizadas no sistema.</p>
         </div>
 
-        <div class="tabela-container">
-            <table class="tabela-dados">
-                <thead>
-                    <tr>
-                        <th style="width: 18%;">Data / Hora</th>
-                        <th style="width: 20%;">Usuário</th>
-                        <th style="width: 12%;">Instituição</th>
-                        <th style="width: 10%;">Ação</th>
-                        <th style="width: 15%;">Tabela Afetada</th>
-                        <th style="width: 25%;">Detalhes / IP</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for a in auditoria %}
-                    <tr>
-                        <td><small>{{ a.criado_em }}</small></td>
-                        <td>
-                            <strong>{{ a.usuario_nome or 'Sistema' }}</strong>
-                            <br><small class="text-mutado">{{ a.usuario_email or '' }}</small>
-                        </td>
-                        <td>{{ a.universidade_sigla or '-' }}</td>
-                        <td><span class="badge-acao-{{ a.acao.lower() }}">{{ a.acao }}</span></td>
-                        <td><code>{{ a.tabela_afetada }}</code></td>
-                        <td>
-                            {% if a.dados_novos %}
-                                <pre class="codigo-json">{{ a.dados_novos | tojson(indent=2) }}</pre>
-                            {% endif %}
-                            <small class="text-mutado">IP: {{ a.ip_origem or '127.0.0.1' }}</small>
-                        </td>
-                    </tr>
-                    {% else %}
-                    <tr>
-                        <td colspan="6" class="text-center">Nenhum evento registrado na auditoria até o momento.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-600">
+                    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                        <tr>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Data / Hora</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/5">Usuário</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/12 text-center">IES</th>
+                            <th scope="col" class="px-6 py-3.5 text-center w-1/12">Ação</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Tabela</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/4">Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for a in auditoria %}
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+                            <td class="px-6 py-4 font-mono text-xs text-slate-500">{{ a.criado_em }}</td>
+                            <td class="px-6 py-4">
+                                <strong class="text-slate-900 text-xs block">{{ a.usuario_nome or 'Sistema' }}</strong>
+                                <span class="text-[11px] text-slate-400 block truncate">{{ a.usuario_email or '' }}</span>
+                            </td>
+                            <td class="px-6 py-4 text-center font-semibold text-slate-700 text-xs">
+                                {{ a.universidade_sigla or '-' }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold uppercase
+                                    {% if a.acao == 'LOGIN' %} bg-sky-50 text-sky-700 border border-sky-200
+                                    {% elif a.acao == 'VALIDACAO' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                                    {% elif a.acao == 'UPDATE' %} bg-amber-50 text-amber-700 border border-amber-200
+                                    {% else %} bg-slate-100 text-slate-700 border border-slate-200 {% endif %}">
+                                    {{ a.acao }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 font-mono text-xs text-slate-600">
+                                <code>{{ a.tabela_afetada }}</code>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if a.dados_novos %}
+                                    <pre class="bg-slate-900 text-slate-200 text-[10px] p-2 rounded max-h-24 overflow-y-auto font-mono">{{ a.dados_novos | tojson(indent=2) }}</pre>
+                                {% endif %}
+                                <span class="text-[10px] text-slate-400 block mt-1">IP: {{ a.ip_origem or '127.0.0.1' }}</span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum evento registrado na auditoria até o momento.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>

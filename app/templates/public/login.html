@@ -3,32 +3,38 @@
 {% block title %}Entrar — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="login-container">
-    <div class="card-login">
-        <div class="login-header">
-            <span class="badge-institucional">Acesso Institucional</span>
-            <h2>Entrar na Plataforma</h2>
-            <p>Ambiente restrito a gestores institucionais e membros da Câmara ABRUEM.</p>
+<div class="min-h-[60vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full bg-white p-8 rounded-2xl border border-slate-200 shadow-lg">
+        <div class="text-center mb-8">
+            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider mb-3">
+                Acesso Institucional
+            </span>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Entrar na Plataforma</h2>
+            <p class="text-xs text-slate-500 mt-1">Ambiente restrito a gestores institucionais e membros da Câmara ABRUEM.</p>
         </div>
 
-        <form method="POST" action="{{ url_for('auth.login') }}" class="form-login">
-            <div class="form-grupo">
-                <label for="email">Usuário ou E-mail:</label>
-                <input type="text" name="email" id="email" value="{{ email or '' }}" required autofocus placeholder="admin ou seu.email@abruem.org.br">
+        <form method="POST" action="{{ url_for('auth.login') }}" class="space-y-5">
+            <div>
+                <label for="email" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Usuário ou E-mail:</label>
+                <input type="text" name="email" id="email" value="{{ email or '' }}" required autofocus placeholder="admin ou seu.email@abruem.org.br"
+                       class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
             </div>
 
-            <div class="form-grupo">
-                <label for="senha">Senha de Acesso:</label>
-                <input type="password" name="senha" id="senha" required placeholder="Digite sua senha">
+            <div>
+                <label for="senha" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Senha de Acesso:</label>
+                <input type="password" name="senha" id="senha" required placeholder="Digite sua senha"
+                       class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2.5 px-3">
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Acessar Ambiente</button>
+            <button type="submit" class="w-full py-3 px-4 rounded-lg bg-abruem-800 text-white font-semibold text-sm hover:bg-abruem-900 shadow transition flex justify-center">
+                Acessar Ambiente
+            </button>
         </form>
 
-        <div class="login-footer">
-            <small class="text-mutado">
+        <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+            <p class="text-xs text-slate-400">
                 Primeiro acesso ou esqueceu a senha? Solicite uma nova credencial ao Administrador da Câmara.
-            </small>
+            </p>
         </div>
     </div>
 </div>

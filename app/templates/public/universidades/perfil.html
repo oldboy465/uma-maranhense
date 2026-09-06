@@ -3,95 +3,128 @@
 {% block title %}{{ universidade.sigla }} — Perfil Institucional{% endblock %}
 
 {% block content %}
-<div class="perfil-cabecalho">
-    <div class="perfil-identificacao">
-        <span class="badge-tipo">{{ universidade.tipo }}</span>
-        <h1>{{ universidade.sigla }}</h1>
-        <h2>{{ universidade.nome }}</h2>
-        <p class="perfil-localizacao">{{ universidade.municipio_sede }} — {{ universidade.uf }} | Região {{ universidade.regiao }}</p>
+<!-- Cabeçalho do Perfil -->
+<div class="bg-white p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <div class="space-y-1.5">
+        <div class="flex items-center gap-2">
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase tracking-wider">
+                {{ universidade.tipo }}
+            </span>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">
+                {{ universidade.uf }}
+            </span>
+        </div>
+        <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">{{ universidade.sigla }}</h1>
+        <h2 class="text-base text-slate-600 font-medium">{{ universidade.nome }}</h2>
+        <p class="text-xs text-slate-400">
+            {{ universidade.municipio_sede or 'Sede Regional' }} | Região {{ universidade.regiao }}
+        </p>
     </div>
-    <div class="perfil-acoes">
-        <a href="{{ url_for('comparador.index', uni1=universidade.id) }}" class="btn btn-outline">Comparar Instituição</a>
+
+    <div class="flex flex-wrap items-center gap-3">
+        <a href="{{ url_for('comparador.index', uni1=universidade.id) }}" class="inline-flex items-center px-4 py-2 text-sm font-semibold rounded-lg bg-abruem-800 text-white hover:bg-abruem-900 shadow-sm transition">
+            Comparar Instituição
+        </a>
     </div>
 </div>
 
-<div class="grid-perfil-secoes">
-    <!-- Coluna 1: Indicadores Validados do Ano Mais Recente -->
-    <div class="card-painel-perfil">
-        <h3>Painel de Indicadores Validados ({{ ano }})</h3>
-        <div class="lista-indicadores-destaque">
-            <div class="item-destaque">
-                <span class="rotulo">Estudantes de Graduação:</span>
-                <span class="valor">
-                    {% if indicadores.get('IND_MATRICULAS_GRAD') and indicadores.get('IND_MATRICULAS_GRAD').valor_numerico is not none %}
-                        {{ indicadores.get('IND_MATRICULAS_GRAD').valor_numerico | numero_br(0) }}
-                    {% else %}
-                        <span class="text-mutado">Não informado</span>
-                    {% endif %}
-                </span>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Indicadores Principais -->
+    <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
+                Painel de Indicadores Validados ({{ ano }})
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Estudantes de Graduação</span>
+                    <div class="text-2xl font-extrabold text-abruem-800 mt-1">
+                        {% if indicadores.get('IND_MATRICULAS_GRAD') and indicadores.get('IND_MATRICULAS_GRAD').valor_numerico is not none %}
+                            {{ indicadores.get('IND_MATRICULAS_GRAD').valor_numerico | numero_br(0) }}
+                        {% elif indicadores.get('ACA_GRAD_TOTAL') and indicadores.get('ACA_GRAD_TOTAL').valor_numerico is not none %}
+                            {{ indicadores.get('ACA_GRAD_TOTAL').valor_numerico | numero_br(0) }}
+                        {% else %}
+                            <span class="text-sm font-medium text-slate-400">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado</span>
+                    <div class="text-2xl font-extrabold text-abruem-800 mt-1">
+                        {% if indicadores.get('IND_ORC_EXECUTADO') and indicadores.get('IND_ORC_EXECUTADO').valor_numerico is not none %}
+                            {{ indicadores.get('IND_ORC_EXECUTADO').valor_numerico | moeda_br }}
+                        {% elif indicadores.get('FIN_LIQUIDADO') and indicadores.get('FIN_LIQUIDADO').valor_numerico is not none %}
+                            {{ indicadores.get('FIN_LIQUIDADO').valor_numerico | moeda_br }}
+                        {% else %}
+                            <span class="text-sm font-medium text-slate-400">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Corpo Docente Total</span>
+                    <div class="text-2xl font-extrabold text-abruem-800 mt-1">
+                        {% if indicadores.get('IND_DOCENTES_TOTAL') and indicadores.get('IND_DOCENTES_TOTAL').valor_numerico is not none %}
+                            {{ indicadores.get('IND_DOCENTES_TOTAL').valor_numerico | numero_br(0) }}
+                        {% elif indicadores.get('PES_DOCENTES_TOTAL') and indicadores.get('PES_DOCENTES_TOTAL').valor_numerico is not none %}
+                            {{ indicadores.get('PES_DOCENTES_TOTAL').valor_numerico | numero_br(0) }}
+                        {% else %}
+                            <span class="text-sm font-medium text-slate-400">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Cursos de Graduação</span>
+                    <div class="text-2xl font-extrabold text-abruem-800 mt-1">
+                        {% if indicadores.get('IND_CURSOS_GRAD') and indicadores.get('IND_CURSOS_GRAD').valor_numerico is not none %}
+                            {{ indicadores.get('IND_CURSOS_GRAD').valor_numerico | numero_br(0) }}
+                        {% elif indicadores.get('ACA_CURSOS_GRAD') and indicadores.get('ACA_CURSOS_GRAD').valor_numerico is not none %}
+                            {{ indicadores.get('ACA_CURSOS_GRAD').valor_numerico | numero_br(0) }}
+                        {% else %}
+                            <span class="text-sm font-medium text-slate-400">Não informado</span>
+                        {% endif %}
+                    </div>
+                </div>
             </div>
 
-            <div class="item-destaque">
-                <span class="rotulo">Orçamento Executado:</span>
-                <span class="valor">
-                    {% if indicadores.get('IND_ORC_EXECUTADO') and indicadores.get('IND_ORC_EXECUTADO').valor_numerico is not none %}
-                        {{ indicadores.get('IND_ORC_EXECUTADO').valor_numerico | moeda_br }}
-                    {% else %}
-                        <span class="text-mutado">Não informado</span>
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="item-destaque">
-                <span class="rotulo">Corpo Docente Total:</span>
-                <span class="valor">
-                    {% if indicadores.get('IND_DOCENTES_TOTAL') and indicadores.get('IND_DOCENTES_TOTAL').valor_numerico is not none %}
-                        {{ indicadores.get('IND_DOCENTES_TOTAL').valor_numerico | numero_br(0) }}
-                    {% else %}
-                        <span class="text-mutado">Não informado</span>
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="item-destaque">
-                <span class="rotulo">Cursos de Graduação:</span>
-                <span class="valor">
-                    {% if indicadores.get('IND_CURSOS_GRAD') and indicadores.get('IND_CURSOS_GRAD').valor_numerico is not none %}
-                        {{ indicadores.get('IND_CURSOS_GRAD').valor_numerico | numero_br(0) }}
-                    {% else %}
-                        <span class="text-mutado">Não informado</span>
-                    {% endif %}
-                </span>
-            </div>
-
-            <div class="item-destaque">
-                <span class="rotulo">Captação em Convênios:</span>
-                <span class="valor">
-                    {% if totais_convenios and totais_convenios.total_global %}
-                        {{ totais_convenios.total_global | moeda_br }}
-                    {% else %}
-                        <span class="text-mutado">R$ 0,00</span>
-                    {% endif %}
-                </span>
+            <div class="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Captação em Convênios</span>
+                    <div class="text-xl font-bold text-slate-800 mt-0.5">
+                        {% if totais_convenios and totais_convenios.total_global %}
+                            {{ totais_convenios.total_global | moeda_br }}
+                        {% else %}
+                            <span class="text-slate-400">R$ 0,00</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <span class="text-xs font-medium text-slate-500">{{ totais_convenios.total_instrumentos or 0 }} termo(s)</span>
             </div>
         </div>
     </div>
 
-    <!-- Coluna 2: Equipe de Gestão e Responsáveis -->
-    <div class="card-painel-perfil">
-        <h3>Equipe de Gestão e Contatos</h3>
+    <!-- Equipe e Contatos -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm h-fit">
+        <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3 mb-4">
+            Equipe de Gestão
+        </h3>
         {% if responsaveis %}
-            <ul class="lista-responsaveis">
+            <ul class="divide-y divide-slate-100">
                 {% for r in responsaveis %}
-                <li>
-                    <strong>{{ r.nome }}</strong>
-                    <span>{{ r.cargo }} ({{ r.tipo.replace('_', ' ').title() }})</span>
-                    {% if r.email %}<small class="email-contato">{{ r.email }}</small>{% endif %}
+                <li class="py-3 first:pt-0 last:pb-0">
+                    <strong class="block text-sm font-semibold text-slate-900">{{ r.nome }}</strong>
+                    <span class="block text-xs text-slate-500 mt-0.5">{{ r.cargo }} ({{ r.tipo.replace('_', ' ').title() }})</span>
+                    {% if r.email %}
+                        <a href="mailto:{{ r.email }}" class="text-xs text-abruem-600 hover:underline mt-1 block truncate">{{ r.email }}</a>
+                    {% endif %}
                 </li>
                 {% endfor %}
             </ul>
         {% else %}
-            <p class="text-mutado">Nenhum responsável institucional registrado pela Câmara.</p>
+            <p class="text-xs text-slate-400">Nenhum responsável institucional cadastrado.</p>
         {% endif %}
     </div>
 </div>
