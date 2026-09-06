@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Rastreabilidade e Fontes — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Fontes Oficiais e Rastreabilidade</h1>
+            <p>Mapeamento de documentos institucionais comprobatórios anexados ou referenciados.</p>
+        </div>
+
+        <div class="card-aviso-metodologico">
+            <h3>Critério de Rastreabilidade Total</h3>
+            <p>
+                Todo dado preenchido deve conter a identificação explícita do documento, página, tabela ou link público oficial (Relatório de Gestão, Balanço Geral, Diário Oficial, Censo do Ensino Superior ou SIG institucional).
+            </p>
+        </div>
+
+        <div class="tabela-container margem-topo">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Instituição</th>
+                        <th style="width: 25%;">Indicador</th>
+                        <th style="width: 10%;">Ano</th>
+                        <th style="width: 20%;">Tipo de Documento</th>
+                        <th style="width: 30%;">Detalhamento / Localização</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for f in fontes %}
+                    <tr>
+                        <td><strong>{{ f.universidade_sigla }}</strong></td>
+                        <td>{{ f.indicador_nome }}</td>
+                        <td>{{ f.ano_referencia }}</td>
+                        <td><span class="badge-tipo">{{ f.fonte_tipo or 'Não informado' }}</span></td>
+                        <td>
+                            {{ f.fonte_descricao or 'Sem descrição' }}
+                            {% if f.fonte_url %}
+                                <br><a href="{{ f.fonte_url }}" target="_blank" class="link-acao">Acessar Documento</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum registro com fonte cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

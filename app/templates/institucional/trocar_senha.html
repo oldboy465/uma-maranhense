@@ -1,0 +1,29 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Atualizar Senha de Acesso — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card-login">
+        <div class="login-header">
+            <span class="badge-institucional">Segurança da Conta</span>
+            <h2>Atualização Obrigatória</h2>
+            <p>Por motivos de segurança institucional, defina uma nova senha individual para o seu primeiro acesso.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.trocar_senha') }}" class="form-login">
+            <div class="form-grupo">
+                <label for="nova_senha">Nova Senha (mínimo 6 caracteres):</label>
+                <input type="password" name="nova_senha" id="nova_senha" required minlength="6" autofocus placeholder="Digite sua nova senha">
+            </div>
+
+            <div class="form-grupo">
+                <label for="confirmacao">Confirme a Nova Senha:</label>
+                <input type="password" name="confirmacao" id="confirmacao" required minlength="6" placeholder="Repita a nova senha">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Salvar Nova Senha</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

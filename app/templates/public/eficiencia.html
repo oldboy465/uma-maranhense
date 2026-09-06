@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dimensão Eficiência — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <span class="tag-dimensao">Dimensão</span>
+    <h1>Eficiência da Execução</h1>
+    <p>Percentuais de execução do conjunto e análise de comportamento das instituições típicas.</p>
+</div>
+
+<div class="grid-resumo-estatistico">
+    <div class="card-estatistico">
+        <h4>Execução do Conjunto da Rede</h4>
+        <div class="valor-destaque">{{ execucao_conjunto | numero_br(2) }}%</div>
+        <small>Soma do liquidado ÷ soma do orçamento das mesmas instituições[cite: 1]</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Instituição Típica (Mediana)</h4>
+        <div class="valor-destaque">{{ mediana_execucao | numero_br(2) }}%</div>
+        <small>Mediana dos percentuais individuais de execução[cite: 1]</small>
+    </div>
+</div>
+
+<div class="card-aviso-metodologico margem-topo">
+    <h3>Diferença Metodológica Fundamental</h3>
+    <p>
+        O percentual de execução do conjunto da rede <strong>não é a média aritmética</strong> dos percentuais de cada universidade[cite: 1]. A plataforma exibe ambos os recortes com rotulagens estritamente distintas para evitar distorções de escala[cite: 1].
+    </p>
+</div>
+{% endblock %}

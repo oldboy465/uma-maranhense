@@ -1,0 +1,64 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Atualizar Indicador — {{ indicador.codigo }}{% endblock %}
+
+{% block content %}
+<div class="login-container" style="max-width: 700px;">
+    <div class="card-login" style="text-align: left;">
+        <div class="login-header">
+            <span class="badge-institucional">{{ universidade.sigla }}</span>
+            <h2>{{ indicador.nome }}</h2>
+            <p>Dimensão: <strong>{{ indicador.dimensao }}</strong> | Tipo: <strong>{{ indicador.tipo_dado }}</strong></p>
+        </div>
+
+        {% if indicador.is_calculado() %}
+            <div class="alert alert-warning">
+                Este indicador é <strong>calculado automaticamente pelo sistema</strong> e não aceita digitação manual[cite: 1].
+            </div>
+        {% else %}
+            <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-login">
+                <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+                <input type="hidden" name="indicador_id" value="{{ indicador.id }}">
+                <input type="hidden" name="ano_referencia" value="{{ ano }}">
+
+                <div class="form-grupo">
+                    <label for="valor">Valor Declarado (Exercício {{ ano }}):</label>
+                    <input type="text" name="valor" id="valor" class="input-valor"
+                           value="{% if registro and registro.valor_numerico is not none %}{{ registro.valor_numerico | numero_br(2) }}{% endif %}"
+                           placeholder="0,00" required>
+                    <small class="text-mutado">Utilize ponto para milhar e vírgula para centavos/decimais.</small>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="fonte_tipo">Tipo do Documento Comprobatório:</label>
+                    <select name="fonte_tipo" id="fonte_tipo" required>
+                        <option value="RELATORIO_GESTAO" {% if registro and registro.fonte_tipo == 'RELATORIO_GESTAO' %}selected{% endif %}>Relatório de Gestão</option>
+                        <option value="BALANCO_GERAL" {% if registro and registro.fonte_tipo == 'BALANCO_GERAL' %}selected{% endif %}>Balanço Geral / Prestação de Contas</option>
+                        <option value="DIARIO_OFICIAL" {% if registro and registro.fonte_tipo == 'DIARIO_OFICIAL' %}selected{% endif %}>Diário Oficial</option>
+                        <option value="SISTEMA_INTERNO" {% if registro and registro.fonte_tipo == 'SISTEMA_INTERNO' %}selected{% endif %}>SIG Interno / Censo</option>
+                    </select>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="fonte_descricao">Identificação da Fonte (Página, Tabela ou Detalhe):</label>
+                    <input type="text" name="fonte_descricao" id="fonte_descricao" 
+                           value="{{ registro.fonte_descricao if registro else '' }}" 
+                           placeholder="Ex: Tabela 4.2, pág. 45" required>
+                </div>
+
+                <div class="form-grupo">
+                    <label for="fonte_url">URL do Documento (Opcional):</label>
+                    <input type="url" name="fonte_url" id="fonte_url" 
+                           value="{{ registro.fonte_url if registro else '' }}" 
+                           placeholder="https://exemplo.edu.br/documento.pdf">
+                </div>
+
+                <div class="botoes-acao" style="display: flex; gap: 10px; margin-top: 20px;">
+                    <button type="submit" name="acao" value="salvar_rascunho" class="btn btn-outline">Salvar Rascunho</button>
+                    <button type="submit" name="acao" value="enviar" class="btn btn-primary">Submeter para Validação</button>
+                </div>
+            </form>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

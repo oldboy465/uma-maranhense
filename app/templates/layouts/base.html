@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Rede ABRUEM — Plataforma Maria Firmina{% endblock %}</title>
+    
+    <!-- CSS Customizado e Componentes -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="site-body">
+    {% include 'layouts/navbar.html' %}
+
+    <main class="main-container">
+        {% include 'layouts/alertas.html' %}
+        {% block content %}{% endblock %}
+    </main>
+
+    {% include 'layouts/footer.html' %}
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,98 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Central de Atualização — {{ universidade.sigla }}{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <div class="titulo-com-badge">
+        <h1>Central de Atualização Institucional</h1>
+        <span class="badge-universidade">{{ universidade.sigla }}</span>
+    </div>
+    <p>Preencha os indicadores requeridos. Ao enviar, o dado é submetido à validação metodológica da Câmara.</p>
+</div>
+
+<div class="filtro-barra">
+    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="form-filtros">
+        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+        <div class="form-grupo">
+            <label for="ano">Exercício de Coleta:</label>
+            <select name="ano" id="ano" onchange="this.form.submit()">
+                {% for a in [2024, 2023, 2022] %}
+                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="tabela-container">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th style="width: 25%;">Indicador</th>
+                <th style="width: 15%;">Tipo</th>
+                <th style="width: 20%;">Valor Declarado</th>
+                <th style="width: 15%;">Status</th>
+                <th style="width: 25%;">Ação / Submissão</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ind in indicadores %}
+            {% set reg = registros.get(ind.id) %}
+            <tr>
+                <td>
+                    <strong>{{ ind.nome }}</strong>
+                    <br><small class="text-mutado">Código: {{ ind.codigo }}</small>
+                </td>
+                <td>{{ ind.tipo_dado }}</td>
+                <td>
+                    {% if ind.is_calculado() %}
+                        <span class="valor-calculado">
+                            {% if reg and reg.valor_numerico is not none %}
+                                {% if ind.tipo_dado == 'MONETARIO' %}{{ reg.valor_numerico | moeda_br }}{% else %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}
+                            {% else %}
+                                <em>Calculado automaticamente</em>
+                            {% endif %}
+                        </span>
+                    {% else %}
+                        <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-inline-valor" id="form-{{ ind.id }}">
+                            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+                            <input type="hidden" name="indicador_id" value="{{ ind.id }}">
+                            <input type="hidden" name="ano_referencia" value="{{ ano }}">
+                            
+                            <input type="text" name="valor" 
+                                   value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}"
+                                   class="input-valor" 
+                                   placeholder="0,00"
+                                   {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] %}disabled{% endif %}>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if reg %}
+                        <span class="badge-status-{{ reg.status_dado.lower() }}">{{ reg.status_dado }}</span>
+                        {% if reg.status_dado == 'DEVOLVIDO' and reg.parecer_devolucao %}
+                            <br><small class="text-perigo">Motivo: {{ reg.parecer_devolucao }}</small>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge-status-vazio">PENDENTE</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if not ind.is_calculado() %}
+                        {% if not reg or reg.status_dado in ['RASCUNHO', 'DEVOLVIDO'] %}
+                            <button type="submit" name="acao" value="salvar_rascunho" class="btn btn-sm btn-outline">Rascunho</button>
+                            <button type="submit" name="acao" value="enviar" class="btn btn-sm btn-primary">Enviar</button>
+                        {% else %}
+                            <small class="text-sucesso">Submetido para validação</small>
+                        {% endif %}
+                        </form>
+                    {% else %}
+                        <small class="text-mutado">Automático pelo Motor</small>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

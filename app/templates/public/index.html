@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Força da Rede — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<section class="hero-section">
+    <div class="hero-content">
+        <span class="badge-institucional">Câmara de Gestão e Governança da ABRUEM</span>
+        <h1 class="hero-title">A Força das Universidades Estaduais e Municipais</h1>
+        <p class="hero-desc">
+            Ambiente analítico integrado para acompanhamento estratégico de indicadores, orçamentos e impacto social de {{ total_universidades }} instituições de ensino superior em todo o Brasil.
+        </p>
+        <div class="hero-meta">
+            <span>Exercício de Referência Consolidado: <strong>{{ ano_destaque }}</strong></span>
+        </div>
+    </div>
+</section>
+
+<section class="cards-grid-indicadores">
+    <div class="card-indicador">
+        <span class="card-rotulo">Estudantes de Graduação</span>
+        <div class="card-valor">{{ totais.estudantes.valor | numero_br(0) }}</div>
+        <span class="card-subtexto">Matrículas ativas declaradas ({{ totais.estudantes.n }} instituições)</span>
+    </div>
+
+    <div class="card-indicador">
+        <span class="card-rotulo">Orçamento Executado</span>
+        <div class="card-valor">{{ totais.orcamento.valor | moeda_br }}</div>
+        <span class="card-subtexto">Despesa liquidada verificada ({{ totais.orcamento.n }} instituições)</span>
+    </div>
+
+    <div class="card-indicador">
+        <span class="card-rotulo">Docentes Efetivos e Temporários</span>
+        <div class="card-valor">{{ totais.docentes.valor | numero_br(0) }}</div>
+        <span class="card-subtexto">Corpo docente em atividade ({{ totais.docentes.n }} instituições)</span>
+    </div>
+
+    <div class="card-indicador">
+        <span class="card-rotulo">Cursos de Graduação</span>
+        <div class="card-valor">{{ totais.cursos.valor | numero_br(0) }}</div>
+        <span class="card-subtexto">Presenciais e EaD ativos ({{ totais.cursos.n }} instituições)</span>
+    </div>
+</section>
+
+<section class="secao-atalhos">
+    <h2>Navegação Rápida</h2>
+    <div class="grid-atalhos">
+        <a href="{{ url_for('regioes.index') }}" class="card-atalho">
+            <h3>Visão por Região</h3>
+            <p>Acompanhe agregações e medianas por macrorregiões do Brasil.</p>
+        </a>
+        <a href="{{ url_for('universidades.lista') }}" class="card-atalho">
+            <h3>Perfil das Filiadas</h3>
+            <p>Consulte a série histórica e responsáveis institucionais de cada universidade.</p>
+        </a>
+        <a href="{{ url_for('comparador.index') }}" class="card-atalho">
+            <h3>Comparador Analítico</h3>
+            <p>Compare duas universidades lado a lado frente às referências da rede.</p>
+        </a>
+        <a href="{{ url_for('metodologia.index') }}" class="card-atalho">
+            <h3>Metodologia e Fórmulas</h3>
+            <p>Conheça os critérios de validação e o dicionário de fórmulas de cálculo.</p>
+        </a>
+    </div>
+</section>
+{% endblock %}

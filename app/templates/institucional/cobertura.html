@@ -1,0 +1,48 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Cobertura de Dados — Rede ABRUEM{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Cobertura da Base de Dados</h1>
+    <p>Acompanhamento de preenchimento e homologação de indicadores por instituição e exercício.</p>
+</div>
+
+<div class="card-aviso-metodologico">
+    <h3>Ressalva Metodológica de Cobertura</h3>
+    <p>
+        Séries históricas e recortes agregados exigem coorte comparável. Uma variação na soma global de uma dimensão decorrente da entrada ou ausência de uma universidade mede a cobertura da base, não a rede como um todo[cite: 1].
+    </p>
+</div>
+
+<div class="tabela-container margem-topo">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Instituição</th>
+                <th style="width: 10%;">UF</th>
+                <th style="width: 15%;">Região</th>
+                <th style="width: 20%; text-align: center;">Indicadores Validados</th>
+                <th style="width: 20%; text-align: center;">Rascunhos / Enviados</th>
+                <th style="width: 20%; text-align: center;">Total Esperado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in cobertura %}
+            <tr>
+                <td><strong>{{ c.sigla }}</strong></td>
+                <td>{{ c.uf }}</td>
+                <td>{{ c.regiao }}</td>
+                <td style="text-align: center;"><span class="badge-sucesso">{{ c.validados }}</span></td>
+                <td style="text-align: center;"><span class="badge-informado">{{ c.pendentes }}</span></td>
+                <td style="text-align: center;"><strong>{{ c.total_esperado }}</strong></td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhum dado de cobertura disponível para o exercício.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

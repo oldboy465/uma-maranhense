@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dicionário Metodológico — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Metodologia e Catálogo de Indicadores</h1>
+    <p>Regras de cálculo, classificação de agregação e princípios adotados pela Câmara de Gestão e Governança.</p>
+</div>
+
+<div class="card-aviso-metodologico">
+    <h3>Princípios Operacionais da Base</h3>
+    <ul>
+        <li><strong>Ausência nunca vira zero:</strong> Indicadores sem informação declarada permanecem em branco e não participam das medianas.</li>
+        <li><strong>Arredondamento Padrão BR:</strong> Valores monetários e dízimas são arredondados rigorosamente em duas casas decimais.</li>
+        <li><strong>Isolamento de Estágios:</strong> Dotação inicial, empenho, liquidação e pagamento jamais são equiparados.</li>
+    </ul>
+</div>
+
+{% for dimensao, lista in dimensoes.items() %}
+<div class="grupo-dimensao">
+    <h2 class="titulo-dimensao">{{ dimensao }}</h2>
+    <div class="tabela-container">
+        <table class="tabela-dados">
+            <thead>
+                <tr>
+                    <th style="width: 15%;">Código</th>
+                    <th style="width: 35%;">Indicador</th>
+                    <th style="width: 15%;">Tipo de Dado</th>
+                    <th style="width: 15%;">Origem</th>
+                    <th style="width: 20%;">Fórmula de Cálculo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in lista %}
+                <tr>
+                    <td><code>{{ item.indicador.codigo }}</code></td>
+                    <td>
+                        <strong>{{ item.indicador.nome }}</strong>
+                        {% if item.indicador.descricao %}
+                            <br><small class="text-mutado">{{ item.indicador.descricao }}</small>
+                        {% endif %}
+                    </td>
+                    <td>{{ item.indicador.tipo_dado }}</td>
+                    <td>
+                        {% if item.indicador.is_calculado() %}
+                            <span class="badge-calculado">Calculado</span>
+                        {% else %}
+                            <span class="badge-informado">Informado</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if item.regra %}
+                            <code>{{ item.regra.formula }}</code>
+                        {% else %}
+                            <span class="text-mutado">Dado Primário</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

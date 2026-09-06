@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dimensão Acadêmica — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <span class="tag-dimensao">Dimensão</span>
+    <h1>Acadêmico</h1>
+    <p>Panorama do ensino de graduação e pós-graduação das universidades filiadas à Rede ABRUEM[cite: 1].</p>
+</div>
+
+<div class="grid-resumo-estatistico">
+    <div class="card-estatistico">
+        <h4>Total de Matrículas em Graduação</h4>
+        <div class="valor-destaque">{{ total_matriculas | numero_br(0) }}</div>
+        <small>Instituições com dados apurados: {{ n_matriculas }}</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Cursos de Graduação Presenciais e EaD</h4>
+        <div class="valor-destaque">{{ total_cursos | numero_br(0) }}</div>
+        <small>Instituições com dados apurados: {{ n_cursos }}</small>
+    </div>
+</div>
+
+<div class="card-aviso-metodologico margem-topo">
+    <h3>Comportamento de Agregação da Dimensão</h3>
+    <p>
+        Estudantes, docentes e cursos são grandezas de <strong>Estoque</strong>: admitem soma entre instituições em um mesmo período, mas nunca soma contínua entre exercícios consecutivos sob pena de contagem duplicada[cite: 1].
+    </p>
+</div>
+{% endblock %}

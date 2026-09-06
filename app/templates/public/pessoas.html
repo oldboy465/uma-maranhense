@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dimensão Pessoas — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <span class="tag-dimensao">Dimensão</span>
+    <h1>Pessoas e Força de Trabalho</h1>
+    <p>Composição do quadro de docentes, corpo técnico-administrativo e relações funcionais[cite: 1].</p>
+</div>
+
+<div class="grid-resumo-estatistico">
+    <div class="card-estatistico">
+        <h4>Corpo Docente Total (Rede)</h4>
+        <div class="valor-destaque">{{ total_docentes | numero_br(0) }}</div>
+        <small>Docentes efetivos e temporários somados no exercício</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Técnicos-Administrativos</h4>
+        <div class="valor-destaque">{{ total_tecnicos | numero_br(0) }}</div>
+        <small>Servidores do quadro técnico em atividade</small>
+    </div>
+</div>
+
+<div class="card-aviso-metodologico margem-topo">
+    <h3>Razão Estudantes por Docente</h3>
+    <p>
+        A relação estudante/docente é classificada metodologicamente como uma <strong>Razão</strong>: nunca é somada e deve ser analisada prioritariamente por meio de sua mediana de rede para prevenir distorções provocadas por valores extremos[cite: 1].
+    </p>
+</div>
+{% endblock %}

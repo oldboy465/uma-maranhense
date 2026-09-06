@@ -1,0 +1,79 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ universidade.sigla }} — Dimensão Acadêmica{% endblock %}
+
+{% block content %}
+<div class="perfil-cabecalho">
+    <div class="perfil-identificacao">
+        <span class="badge-tipo">{{ universidade.tipo }}</span>
+        <h1>{{ universidade.sigla }} — Ensino e Graduação</h1>
+        <p class="perfil-localizacao">{{ universidade.nome }} ({{ universidade.uf }})</p>
+    </div>
+    <div class="perfil-acoes">
+        <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="btn btn-outline">Visão Geral</a>
+    </div>
+</div>
+
+<div class="grid-resumo-estatistico margem-topo">
+    <div class="card-estatistico">
+        <h4>Matrículas na Graduação ({{ ano }})</h4>
+        <div class="valor-destaque">
+            {% if indicadores.get('IND_MATRICULAS_GRAD') and indicadores.get('IND_MATRICULAS_GRAD').valor_numerico is not none %}
+                {{ indicadores.get('IND_MATRICULAS_GRAD').valor_numerico | numero_br(0) }}
+            {% else %}
+                <span class="text-mutado">-</span>
+            {% endif %}
+        </div>
+        <small>Estudantes ativos na instituição</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Cursos Ativos (Presencial e EaD)</h4>
+        <div class="valor-destaque">
+            {% if indicadores.get('IND_CURSOS_GRAD') and indicadores.get('IND_CURSOS_GRAD').valor_numerico is not none %}
+                {{ indicadores.get('IND_CURSOS_GRAD').valor_numerico | numero_br(0) }}
+            {% else %}
+                <span class="text-mutado">-</span>
+            {% endif %}
+        </div>
+        <small>Total de cursos ofertados</small>
+    </div>
+</div>
+
+<div class="tabela-container margem-topo">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Indicador Acadêmico</th>
+                <th class="text-right">Valor Registrado</th>
+                <th>Origem</th>
+                <th>Fonte / Comprovação</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in registros_academicos %}
+            <tr>
+                <td><code>{{ r.indicador_codigo }}</code></td>
+                <td><strong>{{ r.indicador_nome }}</strong></td>
+                <td class="text-right">
+                    <strong>{{ r.valor_numerico | numero_br(0) }}</strong>
+                </td>
+                <td>
+                    {% if r.origem == 'CALCULADO' %}
+                        <span class="badge-calculado">Calculado</span>
+                    {% else %}
+                        <span class="badge-informado">Informado</span>
+                    {% endif %}
+                </td>
+                <td>{{ r.fonte_descricao or 'Relatório Institucional' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhum dado acadêmico validado para o exercício.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

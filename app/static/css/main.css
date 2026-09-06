@@ -1,0 +1,65 @@
+/* ==========================================================================
+   Base e Reset Global — Plataforma Maria Firmina (Rede ABRUEM)
+   ========================================================================== */
+
+:root {
+    --primary: #1e3a8a;          /* Azul institucional ABRUEM */
+    --primary-hover: #1e40af;
+    --primary-light: #eff6ff;
+    --secondary: #0f172a;        /* Grafite profundo */
+    --accent: #0284c7;           /* Ciano de contraste */
+    --success: #16a34a;          /* Verde validação */
+    --warning: #d97706;          /* Âmbar alerta */
+    --danger: #dc2626;           /* Vermelho pendência/devolução */
+    
+    --bg-page: #f8fafc;
+    --bg-card: #ffffff;
+    --border-color: #e2e8f0;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    
+    --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body.site-body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    line-height: 1.5;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+a {
+    color: var(--primary);
+    text-decoration: none;
+    transition: color 0.15s ease-in-out;
+}
+
+a:hover {
+    color: var(--primary-hover);
+}
+
+code {
+    font-family: var(--font-mono);
+    background-color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    color: var(--primary);
+}
+
+.text-mutado { color: var(--text-muted); }
+.text-sucesso { color: var(--success); }
+.text-perigo { color: var(--danger); }
+.text-center { text-align: center; }
+.text-right { text-align: right; }
+.margem-topo { margin-top: 24px; }

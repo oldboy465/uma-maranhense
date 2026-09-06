@@ -1,0 +1,101 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Comparador Institucional — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Comparador Institucional</h1>
+    <p>Comparação descritiva lado a lado entre instituições filiadas e os balizadores da rede.</p>
+</div>
+
+<form method="GET" action="{{ url_for('comparador.index') }}" class="form-comparador">
+    <div class="grid-selecao-comparacao">
+        <div class="form-grupo">
+            <label for="uni1">Primeira Instituição:</label>
+            <select name="uni1" id="uni1" required>
+                <option value="">-- Selecione uma universidade --</option>
+                {% for u in universidades %}
+                    <option value="{{ u.id }}" {% if u1 and u1.id == u.id %}selected{% endif %}>{{ u.sigla }} - {{ u.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="uni2">Segunda Instituição:</label>
+            <select name="uni2" id="uni2" required>
+                <option value="">-- Selecione uma universidade --</option>
+                {% for u in universidades %}
+                    <option value="{{ u.id }}" {% if u2 and u2.id == u.id %}selected{% endif %}>{{ u.sigla }} - {{ u.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="ano">Exercício:</label>
+            <select name="ano" id="ano">
+                {% for a in [2024, 2023, 2022] %}
+                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Comparar Indicadores</button>
+</form>
+
+{% if u1 and u2 %}
+<div class="tabela-container margem-topo">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th>Indicador</th>
+                <th>Dimensão</th>
+                <th class="text-right">{{ u1.sigla }}</th>
+                <th class="text-right">{{ u2.sigla }}</th>
+                <th class="text-right">Mediana da Rede</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in comparativo %}
+            <tr>
+                <td><strong>{{ c.indicador.nome }}</strong></td>
+                <td><span class="tag-dimensao">{{ c.indicador.dimensao }}</span></td>
+                <td class="text-right">
+                    {% if c.v1 is not none %}
+                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
+                            {{ c.v1 | moeda_br }}
+                        {% else %}
+                            {{ c.v1 | numero_br(2) }}
+                        {% endif %}
+                    {% else %}
+                        <span class="text-mutado">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if c.v2 is not none %}
+                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
+                            {{ c.v2 | moeda_br }}
+                        {% else %}
+                            {{ c.v2 | numero_br(2) }}
+                        {% endif %}
+                    {% else %}
+                        <span class="text-mutado">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if c.mediana_rede is not none %}
+                        {% if c.indicador.tipo_dado == 'MONETARIO' %}
+                            {{ c.mediana_rede | moeda_br }}
+                        {% else %}
+                            {{ c.mediana_rede | numero_br(2) }}
+                        {% endif %}
+                    {% else %}
+                        <span class="text-mutado">-</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endif %}
+{% endblock %}

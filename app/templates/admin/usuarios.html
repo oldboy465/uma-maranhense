@@ -1,0 +1,57 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Gestão de Usuários — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Gestão de Usuários do Sistema</h1>
+            <p>Controle de credenciais, perfis de acesso e vinculação institucional às universidades filiadas.</p>
+        </div>
+
+        <div class="tabela-container margem-topo">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 25%;">Nome</th>
+                        <th style="width: 25%;">E-mail Institucional</th>
+                        <th style="width: 20%;">Perfil de Acesso</th>
+                        <th style="width: 15%;">Instituição Vinculada</th>
+                        <th style="width: 15%; text-align: center;">Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td><strong>{{ u.nome }}</strong></td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            {% if u.perfil == 'ADMIN_CAMARA' %}
+                                <span class="badge-tipo">Administrador Câmara</span>
+                            {% else %}
+                                <span class="badge-informado">Gestor Institucional</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ u.universidade_sigla or 'Câmara Geral' }}</td>
+                        <td style="text-align: center;">
+                            {% if u.ativo %}
+                                <span class="badge-sucesso">Ativo</span>
+                            {% else %}
+                                <span class="badge-perigo">Inativo</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum usuário cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

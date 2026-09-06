@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Painel da Câmara — Administração{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Ambiente de Gestão da Câmara</h1>
+            <p>Acompanhamento de submissões pendentes, catálogo institucional e integridade da base.</p>
+        </div>
+
+        <div class="grid-resumo-estatistico">
+            <div class="card-estatistico">
+                <h4>Fila de Submissões</h4>
+                <div class="valor-destaque">{{ submissoes | length }}</div>
+                <small>Registros aguardando parecer ou validação</small>
+            </div>
+            <div class="card-estatistico">
+                <h4>Controle Operacional</h4>
+                <p style="margin-top: 10px; font-size: 0.9rem; color: #475569;">
+                    Valide os lotes de dados informados pelas universidades para que passem a alimentar automaticamente os painéis públicos da Rede ABRUEM.
+                </p>
+            </div>
+        </div>
+
+        <div class="card-painel-perfil margem-topo">
+            <div class="titulo-com-acao" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>Últimas Submissões Recebidas</h3>
+                <a href="{{ url_for('admin.submissoes') }}" class="btn btn-sm btn-outline">Ver Fila Completa</a>
+            </div>
+            
+            <div class="tabela-container">
+                <table class="tabela-dados">
+                    <thead>
+                        <tr>
+                            <th>Instituição</th>
+                            <th>Indicador</th>
+                            <th>Ano</th>
+                            <th class="text-right">Valor</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for s in submissoes[:5] %}
+                        <tr>
+                            <td><strong>{{ s.universidade_sigla }}</strong></td>
+                            <td>{{ s.indicador_nome }}</td>
+                            <td>{{ s.ano_referencia }}</td>
+                            <td class="text-right">{{ s.valor_numerico | numero_br(2) }}</td>
+                            <td><span class="badge-status-enviado">{{ s.status_dado }}</span></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center">Nenhuma submissão pendente de análise no momento.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

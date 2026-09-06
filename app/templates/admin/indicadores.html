@@ -1,0 +1,59 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Catálogo de Indicadores — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Dicionário de Indicadores</h1>
+            <p>Estrutura dos 49 indicadores padronizados da rede e regras de agregação.</p>
+        </div>
+
+        <div class="tabela-container margem-topo">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Código</th>
+                        <th style="width: 30%;">Nome do Indicador</th>
+                        <th style="width: 15%;">Dimensão</th>
+                        <th style="width: 15%;">Tipo de Dado</th>
+                        <th style="width: 15%;">Origem</th>
+                        <th style="width: 10%; text-align: center;">Obrigatório</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ind in indicadores %}
+                    <tr>
+                        <td><code>{{ ind.codigo }}</code></td>
+                        <td><strong>{{ ind.nome }}</strong></td>
+                        <td><span class="tag-dimensao">{{ ind.dimensao }}</span></td>
+                        <td>{{ ind.tipo_dado }}</td>
+                        <td>
+                            {% if ind.is_calculado() %}
+                                <span class="badge-calculado">Calculado</span>
+                            {% else %}
+                                <span class="badge-informado">Informado</span>
+                            {% endif %}
+                        </td>
+                        <td style="text-align: center;">
+                            {% if ind.obrigatorio %}
+                                <span class="text-sucesso">Sim</span>
+                            {% else %}
+                                <span class="text-mutado">Não</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhum indicador cadastrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

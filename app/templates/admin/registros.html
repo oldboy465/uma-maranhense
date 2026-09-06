@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Registros de Dados — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Gestão Geral de Registros</h1>
+            <p>Visualização e auditoria individual de fatos gravados na base de dados.</p>
+        </div>
+
+        <div class="tabela-container margem-topo">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Instituição</th>
+                        <th style="width: 30%;">Indicador</th>
+                        <th style="width: 10%;">Ano</th>
+                        <th style="width: 15%; text-align: right;">Valor</th>
+                        <th style="width: 15%;">Status</th>
+                        <th style="width: 15%;">Atualizado Em</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in registros %}
+                    <tr>
+                        <td><strong>{{ r.universidade_sigla }}</strong></td>
+                        <td>{{ r.indicador_nome }}</td>
+                        <td>{{ r.ano_referencia }}</td>
+                        <td class="text-right">
+                            {% if r.valor_numerico is not none %}
+                                {{ r.valor_numerico | numero_br(2) }}
+                            {% else %}
+                                <span class="text-mutado">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge-status-{{ r.status_dado.lower() }}">{{ r.status_dado }}</span>
+                        </td>
+                        <td><small>{{ r.atualizado_em }}</small></td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhum registro encontrado.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

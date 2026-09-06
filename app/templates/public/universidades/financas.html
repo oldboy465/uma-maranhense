@@ -1,0 +1,73 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ universidade.sigla }} — Execução Orçamentária{% endblock %}
+
+{% block content %}
+<div class="perfil-cabecalho">
+    <div class="perfil-identificacao">
+        <span class="badge-tipo">{{ universidade.tipo }}</span>
+        <h1>{{ universidade.sigla }} — Finanças e Orçamento</h1>
+        <p class="perfil-localizacao">{{ universidade.nome }} ({{ universidade.uf }})</p>
+    </div>
+    <div class="perfil-acoes">
+        <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="btn btn-outline">Visão Geral</a>
+    </div>
+</div>
+
+<div class="grid-resumo-estatistico margem-topo">
+    <div class="card-estatistico">
+        <h4>Orçamento Executado / Liquidado ({{ ano }})</h4>
+        <div class="valor-destaque">
+            {% if indicadores.get('IND_ORC_EXECUTADO') and indicadores.get('IND_ORC_EXECUTADO').valor_numerico is not none %}
+                {{ indicadores.get('IND_ORC_EXECUTADO').valor_numerico | moeda_br }}
+            {% else %}
+                <span class="text-mutado">-</span>
+            {% endif %}
+        </div>
+        <small>Despesa liquidada auditada</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Dotação Orçamentária Autorizada</h4>
+        <div class="valor-destaque">
+            {% if indicadores.get('IND_ORC_AUTORIZADO') and indicadores.get('IND_ORC_AUTORIZADO').valor_numerico is not none %}
+                {{ indicadores.get('IND_ORC_AUTORIZADO').valor_numerico | moeda_br }}
+            {% else %}
+                <span class="text-mutado">-</span>
+            {% endif %}
+        </div>
+        <small>Orçamento atualizado</small>
+    </div>
+</div>
+
+<div class="tabela-container margem-topo">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th>Código</th>
+                <th>Indicador Financeiro</th>
+                <th class="text-right">Valor em Reais (R$)</th>
+                <th>Estágio da Despesa</th>
+                <th>Fonte Oficial</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in registros_financas %}
+            <tr>
+                <td><code>{{ r.indicador_codigo }}</code></td>
+                <td><strong>{{ r.indicador_nome }}</strong></td>
+                <td class="text-right">
+                    <strong>{{ r.valor_numerico | moeda_br }}</strong>
+                </td>
+                <td>{{ r.indicador_tipo or 'Execução' }}</td>
+                <td>{{ r.fonte_descricao or 'Balanço Geral Anual' }}</td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" class="text-center">Nenhum dado orçamentário validado para o exercício.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

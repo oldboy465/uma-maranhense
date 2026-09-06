@@ -1,0 +1,32 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Dimensão Finanças — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <span class="tag-dimensao">Dimensão</span>
+    <h1>Finanças e Orçamento</h1>
+    <p>Execução orçamentária e financeira consolidada das universidades estaduais e municipais.</p>
+</div>
+
+<div class="grid-resumo-estatistico">
+    <div class="card-estatistico">
+        <h4>Orçamento Executado Global</h4>
+        <div class="valor-destaque">{{ total_liquidado | moeda_br }}</div>
+        <small>Total de despesa liquidada verificado no exercício</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Orçamento Autorizado da Rede</h4>
+        <div class="valor-destaque">{{ total_autorizado | moeda_br }}</div>
+        <small>Dotação orçamentária atualizada</small>
+    </div>
+</div>
+
+<div class="card-aviso-metodologico margem-topo">
+    <h3>Isolamento Rigoroso dos Estágios da Despesa</h3>
+    <p>
+        Orçamento inicial, dotação autorizada, despesa empenhada, liquidada e paga nunca são equiparados[cite: 1]. As grandezas orçamentárias possuem comportamento de <strong>Fluxo</strong> (podem ser somadas entre instituições no mesmo exercício ou acumuladas nominalmente)[cite: 1].
+    </p>
+</div>
+{% endblock %}

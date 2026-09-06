@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório Oficial de Pendências — ABRUEM {{ ano }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/impressao.css') }}">
+</head>
+<body class="corpo-impressao" onload="window.print()">
+    <header class="cabecalho-impressao">
+        <div class="timbre-institucional">
+            <h2>Câmara de Gestão e Governança da ABRUEM</h2>
+            <h3>Plataforma Maria Firmina — Relatório de Adimplência de Dados</h3>
+            <p>Exercício de Referência: <strong>{{ ano }}</strong> | Documento emitido para instrução institucional</p>
+        </div>
+    </header>
+
+    <table class="tabela-impressao">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Instituição</th>
+                <th style="width: 8%;">UF</th>
+                <th style="width: 27%;">Responsável Designado</th>
+                <th style="width: 15%; text-align: center;">Qtd. Pendências</th>
+                <th style="width: 35%;">Indicadores Não Informados / Não Validados</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in relatorio %}
+            <tr>
+                <td><strong>{{ item.universidade.sigla }}</strong></td>
+                <td>{{ item.universidade.uf }}</td>
+                <td>
+                    {% if item.responsaveis %}
+                        {{ item.responsaveis[0].nome }} ({{ item.responsaveis[0].cargo }})
+                        <br><small>{{ item.responsaveis[0].email or '' }}</small>
+                    {% else %}
+                        Não informado
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    <strong>{{ item.total_pendencias }}</strong>
+                </td>
+                <td>
+                    {% if item.indicadores_pendentes %}
+                        <ul class="lista-impressao-itens">
+                            {% for ind in item.indicadores_pendentes %}
+                                <li>{{ ind.codigo }} - {{ ind.nome }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <span>Totalmente adimplente</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <footer class="rodape-impressao">
+        <p>Rede ABRUEM — Associação Brasileira dos Reitores das Universidades Estaduais e Municipais</p>
+        <p>Documento gerado a partir do estado atual da base de dados validados da plataforma.</p>
+    </footer>
+</body>
+</html>

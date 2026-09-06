@@ -1,0 +1,85 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Relatório de Pendências — Rede ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Relatório de Pendências</h1>
+            <p>Diagnóstico de indicadores obrigatórios não preenchidos ou não validados por universidade.</p>
+        </div>
+
+        <div class="filtro-barra" style="display: flex; justify-content: space-between; align-items: center;">
+            <form method="GET" action="{{ url_for('relatorios.pendencias') }}" class="form-filtros">
+                <div class="form-grupo">
+                    <label for="ano">Exercício:</label>
+                    <select name="ano" id="ano" onchange="this.form.submit()">
+                        {% for a in [2024, 2023, 2022] %}
+                            <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+
+            <div class="botoes-exportacao" style="display: flex; gap: 10px;">
+                <a href="{{ url_for('relatorios.pendencias', ano=ano, formato='csv') }}" class="btn btn-outline">Exportar CSV</a>
+                <a href="{{ url_for('relatorios.pendencias', ano=ano, formato='impressao') }}" target="_blank" class="btn btn-primary">Versão para Impressão / PDF</a>
+            </div>
+        </div>
+
+        <div class="tabela-container">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Instituição</th>
+                        <th style="width: 10%;">UF</th>
+                        <th style="width: 15%;">Pendências</th>
+                        <th style="width: 30%;">Responsável Institucional</th>
+                        <th style="width: 30%;">Indicadores Faltantes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in relatorio %}
+                    <tr>
+                        <td><strong>{{ item.universidade.sigla }}</strong></td>
+                        <td>{{ item.universidade.uf }}</td>
+                        <td>
+                            {% if item.total_pendencias > 0 %}
+                                <span class="badge-perigo">{{ item.total_pendencias }} pendência(s)</span>
+                            {% else %}
+                                <span class="badge-sucesso">Regular</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.responsaveis %}
+                                <strong>{{ item.responsaveis[0].nome }}</strong>
+                                <br><small class="text-mutado">{{ item.responsaveis[0].cargo }}</small>
+                            {% else %}
+                                <span class="text-mutado">Sem responsável cadastrado</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.indicadores_pendentes %}
+                                <ul style="margin: 0; padding-left: 15px; font-size: 0.85rem;">
+                                    {% for ind in item.indicadores_pendentes[:3] %}
+                                        <li>{{ ind.nome }}</li>
+                                    {% endfor %}
+                                    {% if item.indicadores_pendentes | length > 3 %}
+                                        <li class="text-mutado">+ {{ item.indicadores_pendentes | length - 3 }} indicador(es)</li>
+                                    {% endif %}
+                                </ul>
+                            {% else %}
+                                <span class="text-sucesso">Todos os indicadores validados</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

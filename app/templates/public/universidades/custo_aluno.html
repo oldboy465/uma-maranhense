@@ -1,0 +1,37 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ universidade.sigla }} — Custo-Aluno{% endblock %}
+
+{% block content %}
+<div class="perfil-cabecalho">
+    <div class="perfil-identificacao">
+        <span class="badge-tipo">{{ universidade.tipo }}</span>
+        <h1>{{ universidade.sigla }} — Custo-Aluno</h1>
+        <p class="perfil-localizacao">{{ universidade.nome }} ({{ universidade.uf }})</p>
+    </div>
+    <div class="perfil-acoes">
+        <a href="{{ url_for('universidades.perfil', sigla=universidade.sigla) }}" class="btn btn-outline">Visão Geral</a>
+    </div>
+</div>
+
+<div class="card-aviso-metodologico">
+    <h3>Aviso Metodológico</h3>
+    <p>
+        O custo-aluno não deve ser interpretado como indicador de eficiência ou ranqueamento[cite: 1]. Variações estruturais (cursos laboratoriais de alta densidade, hospitais de ensino e interiorização multicampi) alteram naturalmente essa relação[cite: 1].
+    </p>
+</div>
+
+<div class="grid-resumo-estatistico margem-topo">
+    <div class="card-estatistico">
+        <h4>Custo por Estudante ({{ ano }})</h4>
+        <div class="valor-destaque">
+            {% if indicadores.get('IND_CUSTO_ALUNO') and indicadores.get('IND_CUSTO_ALUNO').valor_numerico is not none %}
+                {{ indicadores.get('IND_CUSTO_ALUNO').valor_numerico | moeda_br }}
+            {% else %}
+                <span class="text-mutado">Não calculável</span>
+            {% endif %}
+        </div>
+        <small>Relação Despesa Liquidada ÷ Matrículas Totais[cite: 1]</small>
+    </div>
+</div>
+{% endblock %}

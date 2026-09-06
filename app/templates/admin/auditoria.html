@@ -1,0 +1,55 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Trilha de Auditoria — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Trilha de Auditoria</h1>
+            <p>Registro imutável de todas as ações de atualização, validação e login realizadas no sistema.</p>
+        </div>
+
+        <div class="tabela-container">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 18%;">Data / Hora</th>
+                        <th style="width: 20%;">Usuário</th>
+                        <th style="width: 12%;">Instituição</th>
+                        <th style="width: 10%;">Ação</th>
+                        <th style="width: 15%;">Tabela Afetada</th>
+                        <th style="width: 25%;">Detalhes / IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in auditoria %}
+                    <tr>
+                        <td><small>{{ a.criado_em }}</small></td>
+                        <td>
+                            <strong>{{ a.usuario_nome or 'Sistema' }}</strong>
+                            <br><small class="text-mutado">{{ a.usuario_email or '' }}</small>
+                        </td>
+                        <td>{{ a.universidade_sigla or '-' }}</td>
+                        <td><span class="badge-acao-{{ a.acao.lower() }}">{{ a.acao }}</span></td>
+                        <td><code>{{ a.tabela_afetada }}</code></td>
+                        <td>
+                            {% if a.dados_novos %}
+                                <pre class="codigo-json">{{ a.dados_novos | tojson(indent=2) }}</pre>
+                            {% endif %}
+                            <small class="text-mutado">IP: {{ a.ip_origem or '127.0.0.1' }}</small>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="text-center">Nenhum evento registrado na auditoria até o momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

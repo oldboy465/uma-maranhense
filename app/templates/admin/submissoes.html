@@ -1,0 +1,66 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Fila de Submissões — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Fila de Validação de Dados</h1>
+            <p>Avalie os registros enviados pelas instituições. Somente dados validados alimentam benchmarks públicos.</p>
+        </div>
+
+        <div class="tabela-container">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 15%;">Instituição</th>
+                        <th style="width: 25%;">Indicador</th>
+                        <th style="width: 10%;">Ano</th>
+                        <th style="width: 15%;" class="text-right">Valor Declarado</th>
+                        <th style="width: 35%;">Decisão Metodológica</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in submissoes %}
+                    <tr>
+                        <td>
+                            <strong>{{ s.universidade_sigla }}</strong>
+                            <br><small class="text-mutado">{{ s.universidade_nome }}</small>
+                        </td>
+                        <td>
+                            <strong>{{ s.indicador_nome }}</strong>
+                            <br><small class="text-mutado">Código: {{ s.indicador_codigo }}</small>
+                        </td>
+                        <td>{{ s.ano_referencia }}</td>
+                        <td class="text-right">
+                            <strong>{{ s.valor_numerico | numero_br(2) }}</strong>
+                            {% if s.fonte_descricao %}
+                                <br><small class="text-mutado">{{ s.fonte_descricao }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <form method="POST" action="{{ url_for('admin.decidir_submissao', registro_id=s.id) }}" class="form-decisao">
+                                <div style="display: flex; gap: 8px; margin-bottom: 6px;">
+                                    <input type="text" name="parecer" placeholder="Parecer (obrigatório se devolver)" class="input-parecer" style="flex: 1; font-size: 0.85rem;">
+                                </div>
+                                <div style="display: flex; gap: 6px;">
+                                    <button type="submit" name="decisao" value="VALIDAR" class="btn btn-sm btn-sucesso">Validar</button>
+                                    <button type="submit" name="decisao" value="DEVOLVER" class="btn btn-sm btn-perigo">Devolver</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhum registro aguardando validação no momento.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

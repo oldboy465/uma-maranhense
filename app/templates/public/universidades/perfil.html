@@ -1,0 +1,98 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}{{ universidade.sigla }} — Perfil Institucional{% endblock %}
+
+{% block content %}
+<div class="perfil-cabecalho">
+    <div class="perfil-identificacao">
+        <span class="badge-tipo">{{ universidade.tipo }}</span>
+        <h1>{{ universidade.sigla }}</h1>
+        <h2>{{ universidade.nome }}</h2>
+        <p class="perfil-localizacao">{{ universidade.municipio_sede }} — {{ universidade.uf }} | Região {{ universidade.regiao }}</p>
+    </div>
+    <div class="perfil-acoes">
+        <a href="{{ url_for('comparador.index', uni1=universidade.id) }}" class="btn btn-outline">Comparar Instituição</a>
+    </div>
+</div>
+
+<div class="grid-perfil-secoes">
+    <!-- Coluna 1: Indicadores Validados do Ano Mais Recente -->
+    <div class="card-painel-perfil">
+        <h3>Painel de Indicadores Validados ({{ ano }})</h3>
+        <div class="lista-indicadores-destaque">
+            <div class="item-destaque">
+                <span class="rotulo">Estudantes de Graduação:</span>
+                <span class="valor">
+                    {% if indicadores.get('IND_MATRICULAS_GRAD') and indicadores.get('IND_MATRICULAS_GRAD').valor_numerico is not none %}
+                        {{ indicadores.get('IND_MATRICULAS_GRAD').valor_numerico | numero_br(0) }}
+                    {% else %}
+                        <span class="text-mutado">Não informado</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="item-destaque">
+                <span class="rotulo">Orçamento Executado:</span>
+                <span class="valor">
+                    {% if indicadores.get('IND_ORC_EXECUTADO') and indicadores.get('IND_ORC_EXECUTADO').valor_numerico is not none %}
+                        {{ indicadores.get('IND_ORC_EXECUTADO').valor_numerico | moeda_br }}
+                    {% else %}
+                        <span class="text-mutado">Não informado</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="item-destaque">
+                <span class="rotulo">Corpo Docente Total:</span>
+                <span class="valor">
+                    {% if indicadores.get('IND_DOCENTES_TOTAL') and indicadores.get('IND_DOCENTES_TOTAL').valor_numerico is not none %}
+                        {{ indicadores.get('IND_DOCENTES_TOTAL').valor_numerico | numero_br(0) }}
+                    {% else %}
+                        <span class="text-mutado">Não informado</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="item-destaque">
+                <span class="rotulo">Cursos de Graduação:</span>
+                <span class="valor">
+                    {% if indicadores.get('IND_CURSOS_GRAD') and indicadores.get('IND_CURSOS_GRAD').valor_numerico is not none %}
+                        {{ indicadores.get('IND_CURSOS_GRAD').valor_numerico | numero_br(0) }}
+                    {% else %}
+                        <span class="text-mutado">Não informado</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            <div class="item-destaque">
+                <span class="rotulo">Captação em Convênios:</span>
+                <span class="valor">
+                    {% if totais_convenios and totais_convenios.total_global %}
+                        {{ totais_convenios.total_global | moeda_br }}
+                    {% else %}
+                        <span class="text-mutado">R$ 0,00</span>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coluna 2: Equipe de Gestão e Responsáveis -->
+    <div class="card-painel-perfil">
+        <h3>Equipe de Gestão e Contatos</h3>
+        {% if responsaveis %}
+            <ul class="lista-responsaveis">
+                {% for r in responsaveis %}
+                <li>
+                    <strong>{{ r.nome }}</strong>
+                    <span>{{ r.cargo }} ({{ r.tipo.replace('_', ' ').title() }})</span>
+                    {% if r.email %}<small class="email-contato">{{ r.email }}</small>{% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p class="text-mutado">Nenhum responsável institucional registrado pela Câmara.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

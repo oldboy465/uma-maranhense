@@ -1,0 +1,82 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Explorar Dados — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Explorar Dados</h1>
+    <p>Consulta livre à base de dados validados da Rede ABRUEM com opção de exportação em CSV.</p>
+</div>
+
+<form method="GET" action="{{ url_for('explorar.index') }}" class="form-explorar">
+    <div class="grid-filtros-explorar">
+        <div class="form-grupo">
+            <label for="indicador">Indicador:</label>
+            <select name="indicador" id="indicador" required>
+                <option value="">-- Selecione o indicador --</option>
+                {% for ind in indicadores %}
+                    <option value="{{ ind.id }}" {% if ind_id == ind.id %}selected{% endif %}>{{ ind.codigo }} - {{ ind.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="universidade">Universidade (opcional):</label>
+            <select name="universidade" id="universidade">
+                <option value="">-- Todas as Universidades --</option>
+                {% for u in universidades %}
+                    <option value="{{ u.id }}" {% if uni_id == u.id %}selected{% endif %}>{{ u.sigla }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="ano">Exercício:</label>
+            <select name="ano" id="ano">
+                <option value="">-- Todos os Anos --</option>
+                {% for a in [2024, 2023, 2022] %}
+                    <option value="{{ a }}" {% if ano == a %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    
+    <div class="botoes-acao">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        {% if resultado %}
+            <a href="{{ url_for('explorar.index', indicador=ind_id, universidade=uni_id, ano=ano, formato='csv') }}" class="btn btn-secundario">Exportar CSV</a>
+        {% endif %}
+    </div>
+</form>
+
+{% if resultado %}
+<div class="tabela-container margem-topo">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th>Sigla</th>
+                <th>Região</th>
+                <th>UF</th>
+                <th>Ano Referência</th>
+                <th class="text-right">Valor Validado</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in resultado %}
+            <tr>
+                <td><strong>{{ r.sigla }}</strong></td>
+                <td>{{ r.regiao }}</td>
+                <td>{{ r.uf }}</td>
+                <td>{{ r.ano_referencia }}</td>
+                <td class="text-right">
+                    {{ r.valor_numerico | numero_br(2) }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% elif ind_id %}
+<p class="alerta-vazio">Nenhum dado validado encontrado para os filtros selecionados.</p>
+{% endif %}
+{% endblock %}

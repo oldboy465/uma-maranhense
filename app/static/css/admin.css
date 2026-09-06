@@ -1,0 +1,77 @@
+/* ==========================================================================
+   Painel e Módulos da Câmara — Administração
+   ========================================================================== */
+
+.admin-layout {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.admin-sidebar {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.sidebar-header {
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h3 {
+    font-size: 1rem;
+    color: var(--primary);
+}
+
+.sidebar-role {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.sidebar-menu {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sidebar-menu a {
+    display: block;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #475569;
+}
+
+.sidebar-menu a:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+}
+
+.sidebar-divider {
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 8px 0;
+}
+
+.codigo-json {
+    background-color: #0f172a;
+    color: #38bdf8;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+@media (max-width: 900px) {
+    .admin-layout {
+        grid-template-columns: 1fr;
+    }
+}

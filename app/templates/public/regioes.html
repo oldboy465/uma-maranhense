@@ -1,0 +1,103 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Análise Regional — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Análise Regional</h1>
+    <p>Agrupamentos de indicadores por região geográfica e exercício de coleta.</p>
+</div>
+
+<div class="filtro-barra">
+    <form method="GET" action="{{ url_for('regioes.index') }}" class="form-filtros">
+        <div class="form-grupo">
+            <label for="regiao">Região:</label>
+            <select name="regiao" id="regiao" onchange="this.form.submit()">
+                {% for r in regioes %}
+                    <option value="{{ r }}" {% if r == regiao_selecionada %}selected{% endif %}>{{ r }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-grupo">
+            <label for="ano">Exercício:</label>
+            <select name="ano" id="ano" onchange="this.form.submit()">
+                {% for a in [2024, 2023, 2022] %}
+                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </form>
+</div>
+
+<div class="grid-resumo-estatistico">
+    <div class="card-estatistico">
+        <h4>Orçamento Executado (Mediana Regional)</h4>
+        <div class="valor-destaque">
+            {% if stats_orc.mediana is not none %}
+                {{ stats_orc.mediana | moeda_br }}
+            {% else %}
+                <span class="text-mutado">Amostra insuficiente (n={{ stats_orc.n }})</span>
+            {% endif %}
+        </div>
+        <small>Instituições com dados no ano: {{ stats_orc.n }}</small>
+    </div>
+
+    <div class="card-estatistico">
+        <h4>Matrículas de Graduação (Mediana Regional)</h4>
+        <div class="valor-destaque">
+            {% if stats_mat.mediana is not none %}
+                {{ stats_mat.mediana | numero_br(0) }}
+            {% else %}
+                <span class="text-mutado">Amostra insuficiente (n={{ stats_mat.n }})</span>
+            {% endif %}
+        </div>
+        <small>Instituições com dados no ano: {{ stats_mat.n }}</small>
+    </div>
+</div>
+
+<div class="tabela-container">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th>Sigla</th>
+                <th>Nome da Instituição</th>
+                <th>UF</th>
+                <th class="text-right">Orçamento Executado (R$)</th>
+                <th class="text-right">Matrículas</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in dados_tabela %}
+            <tr>
+                <td><strong>{{ item.universidade.sigla }}</strong></td>
+                <td>{{ item.universidade.nome }}</td>
+                <td>{{ item.universidade.uf }}</td>
+                <td class="text-right">
+                    {% if item.orcamento is not none %}
+                        {{ item.orcamento | moeda_br }}
+                    {% else %}
+                        <span class="text-mutado">-</span>
+                    {% endif %}
+                </td>
+                <td class="text-right">
+                    {% if item.matriculas is not none %}
+                        {{ item.matriculas | numero_br(0) }}
+                    {% else %}
+                        <span class="text-mutado">-</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('universidades.perfil', sigla=item.universidade.sigla) }}" class="link-acao">Ver Perfil</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="6" class="text-center">Nenhuma instituição com dados nesta região para o ano selecionado.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

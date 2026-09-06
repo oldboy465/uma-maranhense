@@ -1,0 +1,39 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Universidades Filiadas — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="header-pagina">
+    <h1>Universidades Filiadas</h1>
+    <p>Relação das 31 instituições estaduais e municipais que compõem a Rede ABRUEM.</p>
+</div>
+
+<div class="tabela-container">
+    <table class="tabela-dados">
+        <thead>
+            <tr>
+                <th style="width: 15%;">Sigla</th>
+                <th style="width: 45%;">Nome da Instituição</th>
+                <th style="width: 10%;">Tipo</th>
+                <th style="width: 10%;">UF</th>
+                <th style="width: 10%;">Região</th>
+                <th style="width: 10%;" class="text-center">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in universidades %}
+            <tr>
+                <td><strong>{{ u.sigla }}</strong></td>
+                <td>{{ u.nome }}</td>
+                <td><span class="badge-tipo">{{ u.tipo }}</span></td>
+                <td>{{ u.uf }}</td>
+                <td>{{ u.regiao }}</td>
+                <td class="text-center">
+                    <a href="{{ url_for('universidades.perfil', sigla=u.sigla) }}" class="btn btn-sm btn-outline">Perfil</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

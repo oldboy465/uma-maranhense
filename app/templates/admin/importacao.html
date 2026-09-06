@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Carga em Massa — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Carga de Dados em Massa</h1>
+            <p>Importação transacional de planilhas de coleta institucional (.csv ou .xlsx).</p>
+        </div>
+
+        <div class="card-aviso-metodologico">
+            <h3>Regras de Consistência e Importação</h3>
+            <ul>
+                <li><strong>Colunas Obrigatórias:</strong> <code>universidade_id</code>, <code>indicador_id</code>, <code>ano_referencia</code>, <code>valor</code>, <code>status_dado</code>.</li>
+                <li><strong>Tratamento de Erros:</strong> A importação é atômica; qualquer linha inválida ou com dados corrompidos aborta a operação por completo.</li>
+                <li><strong>Registros Existentes:</strong> Registros já validados não são sobrescritos silenciosamente.</li>
+            </ul>
+        </div>
+
+        <div class="card-painel-perfil margem-topo">
+            <h3>Enviar Arquivo</h3>
+            <form method="POST" action="{{ url_for('admin.submissoes') }}" enctype="multipart/form-data" class="form-importacao">
+                <div class="form-grupo">
+                    <label for="arquivo">Selecione o arquivo (.csv ou .xlsx):</label>
+                    <input type="file" name="arquivo" id="arquivo" accept=".csv, .xlsx" required>
+                </div>
+                <div class="botoes-acao" style="margin-top: 15px;">
+                    <button type="submit" class="btn btn-primary">Processar Importação</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

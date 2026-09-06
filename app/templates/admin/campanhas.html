@@ -1,0 +1,51 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Campanhas de Coleta — Câmara ABRUEM{% endblock %}
+
+{% block content %}
+<div class="admin-layout">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="admin-conteudo">
+        <div class="header-pagina">
+            <h1>Campanhas de Coleta Institucional</h1>
+            <p>Ciclos anuais de preenchimento e prazos estabelecidos para as universidades filiadas.</p>
+        </div>
+
+        <div class="tabela-container margem-topo">
+            <table class="tabela-dados">
+                <thead>
+                    <tr>
+                        <th style="width: 35%;">Título da Campanha</th>
+                        <th style="width: 15%; text-align: center;">Ano Referência</th>
+                        <th style="width: 15%; text-align: center;">Data Início</th>
+                        <th style="width: 15%; text-align: center;">Data Fim</th>
+                        <th style="width: 20%; text-align: center;">Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for c in campanhas %}
+                    <tr>
+                        <td><strong>{{ c.nome }}</strong></td>
+                        <td style="text-align: center;"><code>{{ c.ano_referencia }}</code></td>
+                        <td style="text-align: center;">{{ c.data_inicio }}</td>
+                        <td style="text-align: center;">{{ c.data_fim }}</td>
+                        <td style="text-align: center;">
+                            {% if c.is_aberta() %}
+                                <span class="badge-sucesso">Aberta</span>
+                            {% else %}
+                                <span class="badge-perigo">Encerrada</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="text-center">Nenhuma campanha cadastrada.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

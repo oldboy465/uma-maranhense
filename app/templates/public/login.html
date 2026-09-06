@@ -1,0 +1,35 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Entrar — Plataforma Maria Firmina{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    <div class="card-login">
+        <div class="login-header">
+            <span class="badge-institucional">Acesso Institucional</span>
+            <h2>Entrar na Plataforma</h2>
+            <p>Ambiente restrito a gestores institucionais e membros da Câmara ABRUEM.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('auth.login') }}" class="form-login">
+            <div class="form-grupo">
+                <label for="email">E-mail Institucional:</label>
+                <input type="email" name="email" id="email" value="{{ email or '' }}" required autofocus placeholder="seu.email@abruem.org.br">
+            </div>
+
+            <div class="form-grupo">
+                <label for="senha">Senha de Acesso:</label>
+                <input type="password" name="senha" id="senha" required placeholder="Digite sua senha">
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Acessar Ambiente</button>
+        </form>
+
+        <div class="login-footer">
+            <small class="text-mutado">
+                Primeiro acesso ou esqueceu a senha? Solicite uma nova credencial ao Administrador da Câmara.
+            </small>
+        </div>
+    </div>
+</div>
+{% endblock %}

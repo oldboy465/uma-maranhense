@@ -1,0 +1,32 @@
+<header class="header-nav">
+    <div class="nav-container">
+        <a href="{{ url_for('home.index') }}" class="brand-logo">
+            <span class="brand-abruem">ABRUEM</span>
+            <span class="brand-divider">|</span>
+            <span class="brand-sub">Plataforma Maria Firmina</span>
+        </a>
+
+        <nav class="nav-links">
+            <a href="{{ url_for('home.index') }}">Força da Rede</a>
+            <a href="{{ url_for('regioes.index') }}">Regiões</a>
+            <a href="{{ url_for('universidades.lista') }}">Universidades</a>
+            <a href="{{ url_for('comparador.index') }}">Comparador</a>
+            <a href="{{ url_for('explorar.index') }}">Explorar</a>
+            <a href="{{ url_for('metodologia.index') }}">Metodologia</a>
+        </nav>
+
+        <div class="nav-actions">
+            {% if session.get('usuario_id') %}
+                <span class="user-badge">{{ session.get('nome').split()[0] }}</span>
+                {% if session.get('perfil') == 'ADMIN_CAMARA' %}
+                    <a href="{{ url_for('admin.painel') }}" class="btn btn-outline-nav">Câmara</a>
+                {% else %}
+                    <a href="{{ url_for('minha_universidade.painel') }}" class="btn btn-outline-nav">Minha Universidade</a>
+                {% endif %}
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout">Sair</a>
+            {% else %}
+                <a href="{{ url_for('auth.login') }}" class="btn btn-primary-nav">Área Restrita</a>
+            {% endif %}
+        </div>
+    </div>
+</header>
