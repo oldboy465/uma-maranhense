@@ -1,8 +1,9 @@
 import sys
-import os
+from pathlib import Path
 
-# Adiciona a raiz ao path para importar as configuracoes
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../')))
+RAIZ_PROJETO = Path(__file__).resolve().parent.parent.parent
+if str(RAIZ_PROJETO) not in sys.path:
+    sys.path.insert(0, str(RAIZ_PROJETO))
 
 from werkzeug.security import generate_password_hash
 from database.connection import get_db_connection
@@ -12,29 +13,33 @@ def criar_administrador():
     try:
         nome = "Administrador da Câmara"
         email = "admin"
-        senha_pura = "admin"
-        senha_hash = generate_password_hash(senha_pura)
+        senha_hash = generate_password_hash("admin")
         perfil = "ADMIN_CAMARA"
-        precisa_trocar_senha = 0
-        ativo = 1
 
-        sql = """
-            INSERT INTO usuarios (nome, email, senha_hash, perfil, universidade_id, precisa_trocar_senha, ativo)
-            VALUES (%s, %s, %s, %s, NULL, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                nome = VALUES(nome),
-                senha_hash = VALUES(senha_hash),
-                perfil = VALUES(perfil),
-                precisa_trocar_senha = VALUES(precisa_trocar_senha),
-                ativo = VALUES(ativo);
-        """
-        with conn.cursor() as cursor:
-            cursor.execute(sql, (nome, email, senha_hash, perfil, precisa_trocar_senha, ativo))
+        cursor = conn.cursor()
+        cursor.execute("SELECT id FROM usuarios WHERE email = ?", (email,))
+        usuario = cursor.fetchone()
+
+        if usuario:
+            sql = """
+                UPDATE usuarios 
+                SET nome = ?, senha_hash = ?, perfil = ?, precisa_trocar_senha = 0, ativo = 1
+                WHERE email = ?
+            """
+            cursor.execute(sql, (nome, senha_hash, perfil, email))
+            print("Administrador existente atualizado com sucesso (admin / admin).")
+        else:
+            sql = """
+                INSERT INTO usuarios (nome, email, senha_hash, perfil, universidade_id, precisa_trocar_senha, ativo)
+                VALUES (?, ?, ?, ?, NULL, 0, 1)
+            """
+            cursor.execute(sql, (nome, email, senha_hash, perfil))
+            print("Administrador criado com sucesso (admin / admin).")
+
         conn.commit()
-        print("Administrador inserido/atualizado com sucesso no banco MySQL.")
     except Exception as e:
         conn.rollback()
-        print(f"Erro ao inserir administrador: {e}")
+        print(f"Erro ao inserir administrador no SQLite: {e}")
     finally:
         conn.close()
 

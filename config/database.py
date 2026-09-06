@@ -1,19 +1,7 @@
-import pymysql
-from pymysql.cursors import DictCursor
-from config.settings import Config
+"""
+Configuração de acesso ao banco de dados SQLite nativo.
+Redireciona para o conector centralizado em database/connection.py.
+"""
+from database.connection import get_db_connection
 
-def get_db_connection():
-    """
-    Retorna uma conexao ativa com o banco MySQL utilizando DictCursor
-    para devolver registros em formato de dicionario legivel.
-    """
-    return pymysql.connect(
-        host=Config.DB_HOST,
-        port=Config.DB_PORT,
-        user=Config.DB_USER,
-        password=Config.DB_PASSWORD,
-        database=Config.DB_NAME,
-        charset='utf8mb4',
-        cursorclass=DictCursor,
-        autocommit=False
-    )
+__all__ = ['get_db_connection']

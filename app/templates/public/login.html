@@ -13,8 +13,8 @@
 
         <form method="POST" action="{{ url_for('auth.login') }}" class="form-login">
             <div class="form-grupo">
-                <label for="email">E-mail Institucional:</label>
-                <input type="email" name="email" id="email" value="{{ email or '' }}" required autofocus placeholder="seu.email@abruem.org.br">
+                <label for="email">Usuário ou E-mail:</label>
+                <input type="text" name="email" id="email" value="{{ email or '' }}" required autofocus placeholder="admin ou seu.email@abruem.org.br">
             </div>
 
             <div class="form-grupo">

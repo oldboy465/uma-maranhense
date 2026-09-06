@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash
 auth_bp = Blueprint('auth', __name__)
 
 @auth_bp.route('/entrar', methods=['GET', 'POST'])
+@auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if AuthService.esta_autenticado():
         if AuthService.exigir_admin():
@@ -36,6 +37,7 @@ def login():
     return render_template('public/login.html')
 
 @auth_bp.route('/sair')
+@auth_bp.route('/logout')
 def logout():
     AuditoriaService().registrar_evento('usuarios', 'LOGOUT')
     AuthService().logout()

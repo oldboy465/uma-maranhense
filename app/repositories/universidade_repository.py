@@ -26,10 +26,19 @@ class UniversidadeRepository(BaseRepository):
         return [Universidade.from_dict(l) for l in linhas]
 
     def listar_responsaveis(self, universidade_id):
+        # Substitui a funcao FIELD() do MySQL por CASE WHEN compativel com SQLite
         sql = """
             SELECT * FROM universidades_responsaveis 
             WHERE universidade_id = %s 
-            ORDER BY FIELD(tipo, 'REITOR', 'PRO_REITOR', 'REPRESENTANTE_CAMARA', 'RESPONSAVEL_TECNICO')
+            ORDER BY 
+                CASE tipo
+                    WHEN 'REITOR' THEN 1
+                    WHEN 'PRO_REITOR' THEN 2
+                    WHEN 'REPRESENTANTE_CAMARA' THEN 3
+                    WHEN 'RESPONSAVEL_TECNICO' THEN 4
+                    ELSE 5
+                END ASC,
+                nome ASC
         """
         return self.executar_consulta(sql, (universidade_id,))
 

@@ -10,23 +10,25 @@ def index():
     uni_repo = UniversidadeRepository()
     reg_repo = RegistroRepository()
 
-    regiao_selecionada = request.args.get('regiao', 'NORDESTE').upper()
+    # O banco original grava em Title Case ('Nordeste', 'Sul', 'Sudeste', etc.)
+    regiao_param = request.args.get('regiao', 'Sul').strip()
     ano = int(request.args.get('ano', 2024))
 
-    regioes_validas = ['NORTE', 'NORDESTE', 'CENTRO-OESTE', 'SUDESTE', 'SUL']
-    if regiao_selecionada not in regioes_validas:
-        regiao_selecionada = 'NORDESTE'
+    regioes_validas = ['Sul', 'Sudeste', 'Centro-Oeste', 'Nordeste', 'Norte']
+    regiao_selecionada = next((r for r in regioes_validas if r.lower() == regiao_param.lower()), 'Sul')
 
-    universidades_regiao = uni_repo.listar_por_regiao(regiao_selecionada)
-    
-    # Orçamento executado e Matrículas por universidade da região
+    # Busca no banco ignorando maiusculas/minusculas
+    sql_unis = "SELECT * FROM universidades WHERE LOWER(regiao) = LOWER(?) AND status = 'ATIVA' ORDER BY sigla ASC"
+    universidades_regiao = [uni_repo.buscar_por_id(u['id']) for u in uni_repo.executar_consulta(sql_unis, (regiao_selecionada,))]
+
     dados_tabela = []
     valores_orcamento = []
     valores_matriculas = []
 
     for uni in universidades_regiao:
-        dado_orc = reg_repo.buscar_por_chave(uni.id, 'IND_ORC_EXECUTADO', ano)
-        dado_mat = reg_repo.buscar_por_chave(uni.id, 'IND_MATRICULAS_GRAD', ano)
+        # Códigos reais do catálogo estrutural: FIN_LIQUIDADO e ACA_GRAD_TOTAL
+        dado_orc = reg_repo.buscar_por_chave(uni.id, 'FIN_LIQUIDADO', ano)
+        dado_mat = reg_repo.buscar_por_chave(uni.id, 'ACA_GRAD_TOTAL', ano)
 
         v_orc = round(dado_orc.valor_numerico, 2) if (dado_orc and dado_orc.valor_numerico is not None) else None
         v_mat = round(dado_mat.valor_numerico, 0) if (dado_mat and dado_mat.valor_numerico is not None) else None

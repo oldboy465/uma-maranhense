@@ -1,28 +1,23 @@
 from flask import Blueprint, render_template
 from app.repositories.universidade_repository import UniversidadeRepository
-from app.repositories.indicador_repository import IndicadorRepository
 from app.repositories.registro_repository import RegistroRepository
-from app.services.estatistica_service import EstatisticaService
 
 home_bp = Blueprint('home', __name__)
 
 @home_bp.route('/')
 def index():
     uni_repo = UniversidadeRepository()
-    ind_repo = IndicadorRepository()
     reg_repo = RegistroRepository()
 
     total_universidades = len(uni_repo.listar_todas(apenas_ativas=True))
-    
-    # Ano de referência mais recente disponível na base consolidada
     ano_destaque = 2024
 
-    # Busca valores validados dos 4 indicadores-chave do painel 'Força da Rede'
+    # Codigos reais existentes no banco legado (catalogo-estrutural.json)
     indicadores_chave = {
-        'estudantes': 'IND_MATRICULAS_GRAD',
-        'orcamento': 'IND_ORC_EXECUTADO',
-        'docentes': 'IND_DOCENTES_TOTAL',
-        'cursos': 'IND_CURSOS_GRAD'
+        'estudantes': 'ACA_GRAD_TOTAL',
+        'orcamento': 'FIN_LIQUIDADO',
+        'docentes': 'PES_DOCENTES_TOTAL',
+        'cursos': 'ACA_CURSOS_GRAD'
     }
 
     totais = {}
