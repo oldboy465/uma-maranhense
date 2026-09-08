@@ -12,18 +12,35 @@
             <span class="text-xs text-slate-400">{{ universidade.nome }}</span>
         </div>
         <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Central de Atualização Institucional</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Preencha os dados requeridos. Ao enviar, o lote entra na fila de validação da Câmara[cite: 10].</p>
+        <p class="text-sm text-slate-500 mt-0.5">Preencha os dados requeridos. Ao enviar, o lote entra na fila de validação da Câmara.</p>
     </div>
 
-    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="flex items-center gap-2">
-        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-        <label for="ano" class="sr-only">Exercício:</label>
-        <select name="ano" id="ano" onchange="this.form.submit()" 
-                class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
-            {% for a in [2024, 2023, 2022] %}
-                <option value="{{ a }}" {% if a == ano %}selected{% endif %}>Exercício {{ a }}</option>
-            {% endfor %}
-        </select>
+    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="flex flex-wrap items-center gap-2">
+        {% if is_admin %}
+            <div>
+                <label for="universidade_id" class="sr-only">Universidade:</label>
+                <select name="universidade_id" id="universidade_id" onchange="this.form.submit()"
+                        class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                    {% for u in universidades_disponiveis %}
+                        <option value="{{ u.id }}" {% if u.id == universidade.id %}selected{% endif %}>
+                            {{ u.sigla }} — {{ u.nome }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% else %}
+            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+        {% endif %}
+
+        <div>
+            <label for="ano" class="sr-only">Exercício:</label>
+            <select name="ano" id="ano" onchange="this.form.submit()" 
+                    class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                {% for a in [2024, 2023, 2022] %}
+                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>Exercício {{ a }}</option>
+                {% endfor %}
+            </select>
+        </div>
     </form>
 </div>
 

@@ -15,21 +15,30 @@ def painel():
         return redirect(url_for('auth.login'))
 
     usuario = AuthService.usuario_atual()
-    uni_id = usuario.get('universidade_id')
-    
-    # Se for admin visualizando como gestor, aceita parametro via query string
-    if usuario.get('perfil') == 'ADMIN_CAMARA':
-        uni_id = request.args.get('universidade_id', uni_id or 'U01')
+    uni_repo = UniversidadeRepository()
+    ind_repo = IndicadorRepository()
+    reg_repo = RegistroRepository()
+
+    is_admin = (usuario.get('perfil') == 'ADMIN_CAMARA')
+    universidades_disponiveis = uni_repo.listar_todas(apenas_ativas=True) if is_admin else []
+
+    # Se for gestor institucional, fixa a sua universidade vinculada;
+    # Se for admin, permite selecionar qualquer uma via query string (mantendo a atual ou pegando a primeira disponível)
+    if is_admin:
+        default_uni = usuario.get('universidade_id') or (universidades_disponiveis[0].id if universidades_disponiveis else 'U01')
+        uni_id = request.args.get('universidade_id', default_uni)
+    else:
+        uni_id = usuario.get('universidade_id')
 
     if not uni_id:
         flash('Nenhuma instituição vinculada ao seu usuário.', 'warning')
         return redirect(url_for('home.index'))
 
-    uni_repo = UniversidadeRepository()
-    ind_repo = IndicadorRepository()
-    reg_repo = RegistroRepository()
-
     universidade = uni_repo.buscar_por_id(uni_id)
+    if not universidade and universidades_disponiveis:
+        universidade = universidades_disponiveis[0]
+        uni_id = universidade.id
+
     ano_referencia = int(request.args.get('ano', 2024))
 
     indicadores = ind_repo.listar_todos(apenas_ativos=True)
@@ -40,7 +49,9 @@ def painel():
                            universidade=universidade,
                            ano=ano_referencia,
                            indicadores=indicadores,
-                           registros=mapa_registros)
+                           registros=mapa_registros,
+                           is_admin=is_admin,
+                           universidades_disponiveis=universidades_disponiveis)
 
 @minha_universidade_bp.route('/salvar-indicador', methods=['POST'])
 def salvar_indicador():

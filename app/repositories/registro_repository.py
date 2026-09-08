@@ -40,33 +40,49 @@ class RegistroRepository(BaseRepository):
 
     def salvar(self, reg):
         """
-        Insere ou atualiza via ON DUPLICATE KEY UPDATE mantendo a precisão numérica.
-        """
-        sql = """
-            INSERT INTO registro_dados (
-                universidade_id, indicador_id, ano_referencia, 
-                valor_numerico, valor_texto, status_dado, 
-                fonte_tipo, fonte_descricao, fonte_url, 
-                parecer_devolucao, atualizado_por
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE
-                valor_numerico = VALUES(valor_numerico),
-                valor_texto = VALUES(valor_texto),
-                status_dado = VALUES(status_dado),
-                fonte_tipo = VALUES(fonte_tipo),
-                fonte_descricao = VALUES(fonte_descricao),
-                fonte_url = VALUES(fonte_url),
-                parecer_devolucao = VALUES(parecer_devolucao),
-                atualizado_por = VALUES(atualizado_por)
+        Insere ou atualiza o registro verificando a existência prévia da chave única
+        (universidade_id, indicador_id, ano_referencia), garantindo compatibilidade
+        universal com SQLite local e MySQL em produção.
         """
         val_num = round(reg.valor_numerico, 4) if reg.valor_numerico is not None else None
-        params = (
-            reg.universidade_id, reg.indicador_id, reg.ano_referencia,
-            val_num, reg.valor_texto, reg.status_dado,
-            reg.fonte_tipo, reg.fonte_descricao, reg.fonte_url,
-            reg.parecer_devolucao, reg.atualizado_por
-        )
-        return self.executar_comando(sql, params)
+        registro_existente = self.buscar_por_chave(reg.universidade_id, reg.indicador_id, reg.ano_referencia)
+
+        if registro_existente:
+            sql = """
+                UPDATE registro_dados
+                SET valor_numerico = %s,
+                    valor_texto = %s,
+                    status_dado = %s,
+                    fonte_tipo = %s,
+                    fonte_descricao = %s,
+                    fonte_url = %s,
+                    parecer_devolucao = %s,
+                    atualizado_por = %s
+                WHERE universidade_id = %s AND indicador_id = %s AND ano_referencia = %s
+            """
+            params = (
+                val_num, reg.valor_texto, reg.status_dado,
+                reg.fonte_tipo, reg.fonte_descricao, reg.fonte_url,
+                reg.parecer_devolucao, reg.atualizado_por,
+                reg.universidade_id, reg.indicador_id, reg.ano_referencia
+            )
+            return self.executar_comando(sql, params)
+        else:
+            sql = """
+                INSERT INTO registro_dados (
+                    universidade_id, indicador_id, ano_referencia, 
+                    valor_numerico, valor_texto, status_dado, 
+                    fonte_tipo, fonte_descricao, fonte_url, 
+                    parecer_devolucao, atualizado_por
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            params = (
+                reg.universidade_id, reg.indicador_id, reg.ano_referencia,
+                val_num, reg.valor_texto, reg.status_dado,
+                reg.fonte_tipo, reg.fonte_descricao, reg.fonte_url,
+                reg.parecer_devolucao, reg.atualizado_por
+            )
+            return self.executar_comando(sql, params)
 
     def atualizar_status(self, id_registro, novo_status, parecer=None):
         sql = """
