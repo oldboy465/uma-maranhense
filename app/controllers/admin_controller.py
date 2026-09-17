@@ -21,6 +21,52 @@ def painel():
     submissoes_pendentes = reg_repo.listar_submissoes_pendentes()
     return render_template('admin/painel.html', submissoes=submissoes_pendentes)
 
+@admin_bp.route('/universidades')
+def universidades():
+    uni_repo = UniversidadeRepository()
+    ano = int(request.args.get('ano', 2025))
+    lista_com_estatisticas = uni_repo.listar_com_estatisticas_admin(ano_referencia=ano)
+
+    for item in lista_com_estatisticas:
+        u = item['universidade']
+        item['responsaveis'] = uni_repo.listar_responsaveis(u.id)
+
+    return render_template('admin/universidades.html',
+                           instituicoes=lista_com_estatisticas,
+                           ano=ano)
+
+@admin_bp.route('/universidades/<id>/editar', methods=['GET', 'POST'])
+def editar_universidade(id):
+    uni_repo = UniversidadeRepository()
+    universidade = uni_repo.buscar_por_id(id)
+    if not universidade:
+        abort(404)
+
+    if request.method == 'POST':
+        universidade.sigla = request.form.get('sigla', universidade.sigla).strip()
+        universidade.nome = request.form.get('nome', universidade.nome).strip()
+        universidade.tipo = request.form.get('tipo', universidade.tipo).strip()
+        universidade.uf = request.form.get('uf', universidade.uf).strip()
+        universidade.regiao = request.form.get('regiao', universidade.regiao).strip()
+        universidade.municipio_sede = request.form.get('municipio_sede', universidade.municipio_sede).strip()
+        
+        # Campo de Autonomia Financeira (1 = Sim, 0 = Não)
+        autonomia_raw = request.form.get('autonomia_financeira', '0')
+        universidade.autonomia_financeira = 1 if autonomia_raw in ('1', 1, 'on', True) else 0
+
+        uni_repo.salvar(universidade)
+
+        AuditoriaService().registrar_evento(
+            'universidades', 'UPDATE',
+            dados_novos={'id': universidade.id, 'autonomia_financeira': universidade.autonomia_financeira},
+            universidade_id=universidade.id
+        )
+
+        flash(f'Dados da instituição {universidade.sigla} atualizados com sucesso!', 'success')
+        return redirect(url_for('admin.universidades'))
+
+    return render_template('admin/editar_universidade.html', universidade=universidade)
+
 @admin_bp.route('/submissoes')
 def submissoes():
     reg_repo = RegistroRepository()
@@ -29,7 +75,7 @@ def submissoes():
 
 @admin_bp.route('/submissoes/<int:registro_id>/decisao', methods=['POST'])
 def decidir_submissao(registro_id):
-    decisao = request.form.get('decisao')  # VALIDAR ou DEVOLVER
+    decisao = request.form.get('decisao')
     parecer = request.form.get('parecer', '').strip()
 
     if decisao == 'DEVOLVER' and not parecer:
@@ -40,7 +86,6 @@ def decidir_submissao(registro_id):
     reg_repo = RegistroRepository()
     reg_repo.atualizar_status(registro_id, novo_status, parecer if novo_status == 'DEVOLVER' else None)
 
-    # Dispara recálculo se aprovado
     registro = reg_repo.executar_consulta_um("SELECT * FROM registro_dados WHERE id = %s", (registro_id,))
     if registro and novo_status == 'VALIDADO':
         MotorCalculo().calcular_indicadores_derivados(registro['universidade_id'], registro['ano_referencia'])
@@ -49,8 +94,34 @@ def decidir_submissao(registro_id):
     flash(f'Registro {novo_status.lower()} com sucesso!', 'success')
     return redirect(url_for('admin.submissoes'))
 
+@admin_bp.route('/usuarios')
+def usuarios():
+    usr_repo = UsuarioRepository()
+    usuarios_lista = usr_repo.listar_todos()
+    return render_template('admin/usuarios.html', usuarios=usuarios_lista)
+
+@admin_bp.route('/indicadores')
+def indicadores():
+    ind_repo = IndicadorRepository()
+    indicadores_lista = ind_repo.listar_todos(apenas_ativos=False)
+    return render_template('admin/indicadores.html', indicadores=indicadores_lista)
+
+@admin_bp.route('/registros')
+def registros():
+    reg_repo = RegistroRepository()
+    sql = """
+        SELECT r.*, u.sigla as universidade_sigla, i.nome as indicador_nome
+        FROM registro_dados r
+        INNER JOIN universidades u ON r.universidade_id = u.id
+        INNER JOIN indicadores i ON r.indicador_id = i.id
+        ORDER BY r.atualizado_em DESC
+        LIMIT 100
+    """
+    registros_lista = reg_repo.executar_consulta(sql)
+    return render_template('admin/registros.html', registros=registros_lista)
+
 @admin_bp.route('/auditoria')
 def auditoria():
     aud_repo = AuditoriaRepository()
-    registros = aud_repo.listar_ultimas(100)
-    return render_template('admin/auditoria.html', auditoria=registros)
+    registros_aud = aud_repo.listar_ultimas(100)
+    return render_template('admin/auditoria.html', auditoria=registros_aud)

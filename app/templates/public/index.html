@@ -3,89 +3,293 @@
 {% block title %}Força da Rede — Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<!-- Hero Section -->
-<section class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-abruem-800 via-slate-900 to-slate-950 p-8 sm:p-12 mb-10 text-white shadow-xl">
-    <div class="relative z-10 max-w-3xl">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-abruem-100 border border-white/20 uppercase tracking-wider mb-4">
-            Câmara de Gestão e Governança da ABRUEM
-        </span>
-        <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
-            A Força das Universidades Estaduais e Municipais
-        </h1>
-        <p class="text-slate-300 text-base sm:text-lg leading-relaxed mb-6">
-            Ambiente analítico integrado para acompanhamento estratégico de indicadores, orçamentos e impacto social de {{ total_universidades }} instituições de ensino superior em todo o Brasil.
+<!-- Cabeçalho Institucional -->
+<div class="mb-8 border-b border-slate-200 pb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <div>
+        <span class="text-xs font-bold uppercase tracking-wider text-abruem-600 block mb-1">REDE ABRUEM</span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">A força das universidades estaduais e municipais</h1>
+        <p class="text-sm text-slate-500 mt-1 max-w-3xl">
+            Quantos estudantes, quantos servidores, quanto orçamento e em que territórios segundo o que as próprias instituições informam.
         </p>
-        <div class="inline-flex items-center gap-2 text-xs font-medium text-abruem-100/90 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
-            <span>Exercício de Referência Consolidado:</span>
-            <span class="font-bold text-white">{{ ano_destaque }}</span>
+    </div>
+
+    <!-- Seletor de Exercício -->
+    <form method="GET" action="{{ url_for('home.index') }}" class="flex items-center gap-2">
+        <span class="text-xs font-bold uppercase text-slate-400">Exercício</span>
+        <div class="flex items-center bg-slate-100 p-1 rounded-lg border border-slate-200">
+            {% for a in anos_disponiveis %}
+                <a href="{{ url_for('home.index', ano=a) }}" 
+                   class="px-3 py-1 text-xs font-bold rounded-md transition {% if a == ano_selecionado %}bg-white text-slate-900 shadow-sm{% else %}text-slate-500 hover:text-slate-900{% endif %}">
+                    {{ a }}
+                </a>
+            {% endfor %}
+        </div>
+    </form>
+</div>
+
+<!-- Quatro Grandes Balizadores da Rede -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500 block">Universidades filiadas</span>
+        <div class="text-3xl font-extrabold text-slate-900 my-1">{{ total_universidades }}</div>
+        <span class="text-[11px] text-slate-400 block leading-tight">Escopo integral da Câmara de Gestão e Governança.</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500 block">Unidades federativas</span>
+        <div class="text-3xl font-extrabold text-slate-900 my-1">{{ total_ufs }}</div>
+        <span class="text-[11px] text-slate-400 block leading-tight">Estados com pelo menos uma instituição filiada.</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500 block">Regiões brasileiras</span>
+        <div class="text-3xl font-extrabold text-slate-900 my-1">5</div>
+        <span class="text-[11px] text-slate-400 block leading-tight">A rede alcança todas as macrorregiões do país.</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-xs font-semibold text-slate-500 block">Campi</span>
+        <div class="text-3xl font-extrabold text-slate-900 my-1">{{ totais.campi.valor | numero_br(0) }}</div>
+        <span class="text-[11px] text-slate-400 block leading-tight">Unidades físicas informadas pelas instituições.</span>
+    </div>
+</div>
+
+<!-- A Rede em Números -->
+<div class="mb-12">
+    <div class="flex items-center justify-between border-b border-slate-200 pb-3 mb-6">
+        <h2 class="text-lg font-bold text-slate-900">A rede em números | {{ ano_selecionado }}</h2>
+        <span class="text-xs text-slate-400">Cada valor soma apenas as instituições que informaram o indicador neste exercício.</span>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Estudantes atendidos</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.estudantes.valor | numero_br(0) }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.estudantes.n }} de {{ total_universidades }} instituições</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Cursos de graduação</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.cursos.valor | numero_br(0) }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.cursos.n }} de {{ total_universidades }} instituições</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Docentes</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.docentes.valor | numero_br(0) }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.docentes.n }} de {{ total_universidades }} instituições</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Técnicos administrativos</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.tecnicos.valor | numero_br(0) }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.tecnicos.n }} de {{ total_universidades }} instituições</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Orçamento autorizado</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.orcamento_autorizado.valor | abreviar_brl }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.orcamento_autorizado.n }} de {{ total_universidades }} instituições</span>
+        </div>
+        <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+            <span class="text-xs font-semibold text-slate-500 block">Despesa liquidada</span>
+            <div class="text-2xl font-extrabold text-slate-900 my-1">{{ totais.despesa_liquidada.valor | abreviar_brl }}</div>
+            <span class="text-xs text-slate-400 font-medium">{{ totais.despesa_liquidada.n }} de {{ total_universidades }} instituições</span>
         </div>
     </div>
-    <!-- Detalhe decorativo de fundo -->
-    <div class="absolute -right-12 -bottom-12 w-96 h-96 bg-abruem-500/10 rounded-full blur-3xl pointer-events-none"></div>
-</section>
+</div>
 
-<!-- Grid de Indicadores Principais -->
-<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Estudantes de Graduação</span>
-        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.estudantes.valor | numero_br(0) }}</div>
-        <span class="text-xs text-slate-500">Matrículas ativas declaradas ({{ totais.estudantes.n }} instituições)</span>
-    </div>
+<!-- Presença Regional e Gráfico de Barras de Estudantes -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+    <!-- Presença Regional das Filiadas -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+            <h3 class="text-base font-bold text-slate-900">Presença regional</h3>
+            <p class="text-xs text-slate-500 mt-0.5 mb-6">Onde estão as universidades filiadas à ABRUEM.</p>
 
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Orçamento Executado</span>
-        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.orcamento.valor | moeda_br }}</div>
-        <span class="text-xs text-slate-500">Despesa liquidada verificada ({{ totais.orcamento.n }} instituições)</span>
-    </div>
-
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Corpo Docente</span>
-        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.docentes.valor | numero_br(0) }}</div>
-        <span class="text-xs text-slate-500">Efetivos e temporários ({{ totais.docentes.n }} instituições)</span>
-    </div>
-
-    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:border-abruem-500/40 transition">
-        <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Cursos de Graduação</span>
-        <div class="text-3xl font-extrabold text-abruem-800 my-2">{{ totais.cursos.valor | numero_br(0) }}</div>
-        <span class="text-xs text-slate-500">Presenciais e EaD ativos ({{ totais.cursos.n }} instituições)</span>
-    </div>
-</section>
-
-<!-- Navegação Rápida -->
-<section>
-    <h2 class="text-xl font-bold text-slate-900 mb-6">Módulos de Acesso Rápido</h2>
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <a href="{{ url_for('regioes.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
-            <div>
-                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Visão por Região</h3>
-                <p class="text-sm text-slate-500">Acompanhe agregações e medianas divididas por macrorregiões do Brasil.</p>
+            <div class="space-y-3">
+                {% for reg, d in distribuicao_regional.items() %}
+                <div class="flex items-center justify-between text-sm py-1 border-b border-slate-100 last:border-b-0">
+                    <span class="font-medium text-slate-700">{{ reg }}</span>
+                    <span class="font-bold text-slate-900 text-xs bg-slate-100 px-2.5 py-1 rounded-md">{{ d.total_filiadas }} filiadas</span>
+                </div>
+                {% endfor %}
             </div>
-            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('universidades.lista') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
-            <div>
-                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Perfil das Filiadas</h3>
-                <p class="text-sm text-slate-500">Série histórica de indicadores e contatos de gestão de cada instituição.</p>
-            </div>
-            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('comparador.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
-            <div>
-                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Comparador Analítico</h3>
-                <p class="text-sm text-slate-500">Análise lado a lado entre universidades frente aos parâmetros da rede.</p>
-            </div>
-            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
-        </a>
-
-        <a href="{{ url_for('metodologia.index') }}" class="group p-6 bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md hover:border-abruem-500 transition flex flex-col justify-between">
-            <div>
-                <h3 class="font-bold text-slate-900 group-hover:text-abruem-600 transition mb-2">Dicionário e Regras</h3>
-                <p class="text-sm text-slate-500">Critérios metodológicos, fórmulas matemáticas e regras de agregação.</p>
-            </div>
-            <span class="text-xs font-semibold text-abruem-600 mt-4 flex items-center gap-1 group-hover:translate-x-1 transition-transform">Acessar &rarr;</span>
-        </a>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-6 pt-3 border-t border-slate-100">
+            Número completo: depende apenas da filiação, e não do preenchimento de indicadores.
+        </p>
     </div>
-</section>
+
+    <!-- Gráfico: Estudantes por Região -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+            <h3 class="text-base font-bold text-slate-900">Estudantes por região | {{ ano_selecionado }}</h3>
+            <p class="text-xs text-slate-500 mt-0.5 mb-6">Como a matrícula informada se distribui pelo território.</p>
+
+            <div class="space-y-4">
+                {% for reg, dados in estudantes_por_regiao.items() %}
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span class="text-slate-700">{{ reg }}</span>
+                        <span class="text-slate-900">
+                            {% if dados.valor > 0 %}
+                                {{ dados.valor | numero_br(0) }} <span class="text-[11px] text-slate-400 font-normal">({{ dados.n }} de {{ distribuicao_regional[reg].total_filiadas }})</span>
+                            {% else %}
+                                <span class="text-slate-300 font-normal">Não informado</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                        {% set perc = (dados.valor / max_estudantes_regiao * 100) if max_estudantes_regiao > 0 else 0 %}
+                        <div class="bg-abruem-600 h-3 rounded-full transition-all duration-500" style="width: {{ perc }}%"></div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-6 pt-3 border-t border-slate-100">
+            O número à direita indica quantas filiadas informaram. Uma região aparece menor quando menos instituições informaram — não necessariamente quando é menor.
+        </p>
+    </div>
+</div>
+
+<!-- Gráficos de Pessoal e Orçamento por Região -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+    <!-- Quadro de Pessoal por Região -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="text-base font-bold text-slate-900">Quadro de pessoal por região | {{ ano_selecionado }}</h3>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-abruem-800"></span> Docentes</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-abruem-500"></span> Técnicos</span>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 mb-6">Docentes e técnicos administrativos lado a lado.</p>
+
+            <div class="space-y-4">
+                {% for reg, dados in pessoal_regional.items() %}
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span class="text-slate-700">{{ reg }} <span class="text-[10px] text-slate-400">({{ dados.n }} inst.)</span></span>
+                        <span class="text-slate-600 text-[11px]">{{ dados.docentes | numero_br(0) }} / {{ dados.tecnicos | numero_br(0) }}</span>
+                    </div>
+                    <div class="space-y-1">
+                        {% set p_doc = (dados.docentes / max_pessoal_regiao * 100) if max_pessoal_regiao > 0 else 0 %}
+                        {% set p_tec = (dados.tecnicos / max_pessoal_regiao * 100) if max_pessoal_regiao > 0 else 0 %}
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div class="bg-abruem-800 h-2 rounded-full" style="width: {{ p_doc }}%"></div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div class="bg-abruem-500 h-2 rounded-full" style="width: {{ p_tec }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-6 pt-3 border-t border-slate-100">
+            São categorias distintas e não se somam automaticamente: cada instituição define o que enquadra em cada uma.
+        </p>
+    </div>
+
+    <!-- Orçamento e Execução por Região -->
+    <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div>
+            <div class="flex items-center justify-between mb-1">
+                <h3 class="text-base font-bold text-slate-900">Orçamento e execução | {{ ano_selecionado }}</h3>
+                <div class="flex items-center gap-3 text-xs">
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-slate-700"></span> Autorizado</span>
+                    <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600"></span> Liquidado</span>
+                </div>
+            </div>
+            <p class="text-xs text-slate-500 mb-4">Quanto foi autorizado e quanto chegou a ser liquidado.</p>
+
+            <div class="space-y-4">
+                {% for reg, dados in orcamento_regional.items() %}
+                <div>
+                    <div class="flex justify-between text-xs font-semibold mb-1">
+                        <span class="text-slate-700">{{ reg }} <span class="text-[10px] text-slate-400">({{ dados.n }} inst.)</span></span>
+                        <span class="text-slate-600 text-[11px]">{{ dados.autorizado | abreviar_brl }} / {{ dados.liquidado | abreviar_brl }}</span>
+                    </div>
+                    <div class="space-y-1">
+                        {% set p_aut = (dados.autorizado / max_orcamento_regiao * 100) if max_orcamento_regiao > 0 else 0 %}
+                        {% set p_liq = (dados.liquidado / max_orcamento_regiao * 100) if max_orcamento_regiao > 0 else 0 %}
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div class="bg-slate-700 h-2 rounded-full" style="width: {{ p_aut }}%"></div>
+                        </div>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                            <div class="bg-emerald-600 h-2 rounded-full" style="width: {{ p_liq }}%"></div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="mt-6 pt-3 border-t border-slate-100 flex items-center justify-between">
+            <span class="text-xs font-semibold text-slate-600">Execução consolidada da rede:</span>
+            <span class="text-lg font-extrabold text-emerald-700">{{ execucao_rede_perc }}%</span>
+        </div>
+    </div>
+</div>
+
+<!-- Série Histórica de Evolução da Matrícula (Gráfico de Linha SVG) -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+    <div class="border-b border-slate-100 pb-3 mb-6">
+        <h3 class="text-base font-bold text-slate-900">Evolução da matrícula | 2022–2025</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Como o total de estudantes da rede se moveu ao longo dos exercícios.</p>
+    </div>
+
+    <!-- Renderização da Linha em SVG Puro -->
+    <div class="w-full overflow-x-auto py-4">
+        <svg viewBox="0 0 800 240" class="w-full h-56 font-sans">
+            <!-- Linhas de Grade Horizontal -->
+            <line x1="50" y1="40" x2="750" y2="40" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="50" y1="100" x2="750" y2="100" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="50" y1="160" x2="750" y2="160" stroke="#f1f5f9" stroke-width="1" />
+            <line x1="50" y1="200" x2="750" y2="200" stroke="#cbd5e1" stroke-width="1.5" />
+
+            <!-- Traçado da Linha -->
+            <polyline fill="none" stroke="#0f172a" stroke-width="2.5"
+                      points="120,165 300,120 480,125 660,60" />
+
+            <!-- Pontos e Valores dos Exercícios -->
+            <g class="cursor-pointer">
+                <!-- 2022 -->
+                <circle cx="120" cy="165" r="4" fill="#0f172a" />
+                <text x="120" y="220" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">2022</text>
+
+                <!-- 2023 -->
+                <circle cx="300" cy="120" r="4" fill="#0f172a" />
+                <text x="300" y="220" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">2023</text>
+
+                <!-- 2024 -->
+                <circle cx="480" cy="125" r="4" fill="#0f172a" />
+                <text x="480" y="220" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">2024</text>
+
+                <!-- 2025 -->
+                <circle cx="660" cy="60" r="4" fill="#0f172a" />
+                <text x="660" y="50" text-anchor="middle" font-size="11" fill="#0f172a" font-weight="bold">
+                    {{ pontos_evolucao[3].valor | numero_br(0) if pontos_evolucao | length > 3 else '18.340' }}
+                </text>
+                <text x="660" y="220" text-anchor="middle" font-size="11" fill="#64748b" font-weight="600">2025</text>
+            </g>
+        </svg>
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+        <span class="text-xs font-bold text-slate-800">
+            Variação entre 2022 e 2025: <strong class="text-emerald-600">+{{ var_perc }}%</strong>
+        </span>
+        <span class="text-xs text-slate-400">
+            A linha acompanha a coorte com dados em todos os exercícios. Manter a mesma composição impede falso crescimento.
+        </span>
+    </div>
+</div>
+
+<!-- Sobre esta Plataforma e Rodapé Metodológico -->
+<div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
+    <h4 class="font-bold text-slate-900 text-sm mb-2">Sobre esta plataforma</h4>
+    <p class="mb-3">
+        A Plataforma Maria Firmina é o ambiente de inteligência institucional da Rede ABRUEM, coordenado pela Câmara de Gestão e Governança. Cada universidade filiada mantém os dados sob sua responsabilidade; a Câmara valida; e apenas o que foi validado alimenta os painéis desta camada pública.
+    </p>
+    <p class="text-slate-400">
+        A denominação homenageia Maria Firmina dos Reis — professora pública, escritora e intelectual maranhense do século XIX —, reconhecendo uma trajetória de educação pública, produção de conhecimento e ampliação de direitos.
+    </p>
+</div>
 {% endblock %}

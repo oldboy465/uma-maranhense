@@ -1,53 +1,92 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Administração de Universidades — Câmara ABRUEM{% endblock %}
+{% block title %}Administração da Câmara · Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
 <div class="flex flex-col lg:flex-row items-start gap-8">
     {% include 'layouts/sidebar_admin.html' %}
     
-    <div class="flex-1 w-full space-y-8">
+    <div class="flex-1 w-full space-y-6">
+        <!-- Cabeçalho -->
         <div class="border-b border-slate-200 pb-5">
-            <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Universidades Filiadas</h1>
-            <p class="text-sm text-slate-500 mt-1">Cadastro oficial das instituições de ensino superior integrantes da Rede ABRUEM[cite: 10].</p>
+            <span class="text-xs font-bold uppercase tracking-wider text-abruem-600 block mb-1">GESTÃO DA REDE</span>
+            <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Administração da Câmara</h1>
+            <p class="text-xs text-slate-500 mt-1">Instituições, acessos, indicadores, submissões, pendências e auditoria da Plataforma ABRUEM.</p>
         </div>
 
+        <!-- Seção: Instituições da Rede -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Instituições da rede ({{ instituicoes | length }})</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Cobertura, autonomia orçamentária e gestores com acesso ao sistema.</p>
+                </div>
+
+                <!-- Seletor de Ano -->
+                <form method="GET" action="{{ url_for('admin.universidades') }}" class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-slate-400">Ano:</span>
+                    <select name="ano" onchange="this.form.submit()" 
+                            class="rounded-lg border-slate-300 text-xs font-bold text-slate-800 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-1.5 px-3">
+                        {% for a in [2025, 2024, 2023, 2022] %}
+                            <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+
             <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-600">
-                    <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <table class="w-full text-left text-sm text-slate-600 border-collapse">
+                    <thead class="bg-slate-50 text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         <tr>
-                            <th scope="col" class="px-6 py-3.5 w-1/12">ID</th>
-                            <th scope="col" class="px-6 py-3.5 w-1/6">Sigla</th>
-                            <th scope="col" class="px-6 py-3.5 w-2/5">Nome Oficial</th>
-                            <th scope="col" class="px-6 py-3.5">Tipo</th>
-                            <th scope="col" class="px-6 py-3.5 text-center">UF</th>
-                            <th scope="col" class="px-6 py-3.5">Região</th>
-                            <th scope="col" class="px-6 py-3.5 text-center">Situação</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/12">SIGLA</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/3">INSTITUIÇÃO</th>
+                            <th scope="col" class="px-4 py-3.5 text-center w-1/12">UF</th>
+                            <th scope="col" class="px-4 py-3.5 text-center w-1/12">AUTONOMIA</th>
+                            <th scope="col" class="px-6 py-3.5 text-center w-1/6">COBERTURA</th>
+                            <th scope="col" class="px-4 py-3.5 text-center w-1/12">GESTORES</th>
+                            <th scope="col" class="px-6 py-3.5 text-right w-1/6">AÇÕES</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
-                        {% for u in universidades %}
+                        {% for item in instituicoes %}
+                        {% set u = item.universidade %}
                         <tr class="hover:bg-slate-50/80 transition-colors">
-                            <td class="px-6 py-4 font-mono text-xs text-slate-400">{{ u.id }}</td>
                             <td class="px-6 py-4 font-bold text-slate-900">{{ u.sigla }}</td>
-                            <td class="px-6 py-4 font-medium text-slate-800">{{ u.nome }}</td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ u.tipo }}</span>
+                                <span class="font-medium text-slate-800 block leading-tight">{{ u.nome }}</span>
+                                <span class="text-[11px] text-slate-400 font-normal block mt-0.5">{{ u.tipo }} · Região {{ u.regiao }}</span>
                             </td>
-                            <td class="px-6 py-4 text-center font-bold text-slate-700">{{ u.uf }}</td>
-                            <td class="px-6 py-4 text-slate-600">{{ u.regiao }}</td>
-                            <td class="px-6 py-4 text-center">
-                                {% if u.status == 'ATIVA' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Ativa</span>
+                            <td class="px-4 py-4 text-center font-semibold text-slate-700">{{ u.uf }}</td>
+                            <td class="px-4 py-4 text-center">
+                                {% if u.autonomia_financeira == 1 %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Sim</span>
                                 {% else %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Inativa</span>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-500 border border-slate-200">Não</span>
                                 {% endif %}
                             </td>
-                        </tr>
-                        {% else %}
-                        <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-sm text-slate-400">Nenhuma universidade cadastrada.</td>
+                            <td class="px-6 py-4 text-center">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold
+                                    {% if item.cobertura >= 80.0 %}bg-emerald-50 text-emerald-700 border border-emerald-200
+                                    {% elif item.cobertura > 0.0 %}bg-amber-50 text-amber-700 border border-amber-200
+                                    {% else %}bg-slate-100 text-slate-400 border border-slate-200{% endif %}">
+                                    {{ item.cobertura }}%
+                                </span>
+                            </td>
+                            <td class="px-4 py-4 text-center font-bold text-slate-800">
+                                {{ item.total_gestores }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex items-center justify-end gap-2 whitespace-nowrap">
+                                    <a href="{{ url_for('admin.editar_universidade', id=u.id) }}" 
+                                       class="inline-flex items-center px-2.5 py-1 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded text-xs font-semibold transition shadow-sm">
+                                        Editar
+                                    </a>
+                                    <a href="{{ url_for('minha_universidade.painel', universidade_id=u.id, ano=ano) }}" 
+                                       class="inline-flex items-center px-3 py-1 bg-slate-100 hover:bg-abruem-800 hover:text-white text-slate-700 rounded text-xs font-bold transition shadow-sm">
+                                        Abrir grade
+                                    </a>
+                                </div>
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>

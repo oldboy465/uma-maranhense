@@ -38,6 +38,23 @@ def create_app(config_class=Config):
         except (ValueError, TypeError):
             return "0,00"
 
+    @app.template_filter('abreviar_brl')
+    def abreviar_brl_filter(valor):
+        """
+        Formata grandes grandezas financeiras (ex: R$ 1,9 bi ou R$ 917,1 mi).
+        """
+        if valor is None or valor == '':
+            return "R$ 0,0"
+        try:
+            val = float(valor)
+            if abs(val) >= 1_000_000_000:
+                return f"R$ {val / 1_000_000_000:.1f} bi".replace('.', ',')
+            elif abs(val) >= 1_000_000:
+                return f"R$ {val / 1_000_000:.1f} mi".replace('.', ',')
+            return moeda_br_filter(valor)
+        except (ValueError, TypeError):
+            return "R$ 0,0"
+
     # Registro de Blueprints (Controllers)
     from app.controllers.home_controller import home_bp
     from app.controllers.auth_controller import auth_bp
@@ -49,6 +66,7 @@ def create_app(config_class=Config):
     from app.controllers.minha_universidade_controller import minha_universidade_bp
     from app.controllers.relatorios_controller import relatorios_bp
     from app.controllers.admin_controller import admin_bp
+    from app.controllers.dimensoes_controller import dimensoes_bp
 
     app.register_blueprint(home_bp)
     app.register_blueprint(auth_bp)
@@ -60,5 +78,6 @@ def create_app(config_class=Config):
     app.register_blueprint(minha_universidade_bp, url_prefix='/minha-universidade')
     app.register_blueprint(relatorios_bp, url_prefix='/relatorios')
     app.register_blueprint(admin_bp, url_prefix='/admin')
+    app.register_blueprint(dimensoes_bp)
 
     return app

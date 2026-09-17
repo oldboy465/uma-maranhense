@@ -1,7 +1,7 @@
 class Universidade:
     def __init__(self, id=None, sigla=None, nome=None, tipo=None, 
                  uf=None, regiao=None, municipio_sede=None, 
-                 ano_filiacao=None, status='ATIVA', criado_em=None):
+                 ano_filiacao=None, status='ATIVA', autonomia_financeira=0, criado_em=None):
         self.id = id
         self.sigla = sigla
         self.nome = nome
@@ -11,7 +11,11 @@ class Universidade:
         self.municipio_sede = municipio_sede
         self.ano_filiacao = ano_filiacao
         self.status = status
+        self.autonomia_financeira = 1 if (autonomia_financeira in (1, '1', True, 'Sim', 'SIM')) else 0
         self.criado_em = criado_em
+
+    def tem_autonomia(self):
+        return bool(self.autonomia_financeira)
 
     @classmethod
     def from_dict(cls, dados):
@@ -27,6 +31,7 @@ class Universidade:
             municipio_sede=dados.get('municipio_sede'),
             ano_filiacao=dados.get('ano_filiacao'),
             status=dados.get('status', 'ATIVA'),
+            autonomia_financeira=dados.get('autonomia_financeira', 0),
             criado_em=dados.get('criado_em')
         )
 
@@ -41,5 +46,6 @@ class Universidade:
             'municipio_sede': self.municipio_sede,
             'ano_filiacao': self.ano_filiacao,
             'status': self.status,
+            'autonomia_financeira': self.autonomia_financeira,
             'criado_em': self.criado_em
         }

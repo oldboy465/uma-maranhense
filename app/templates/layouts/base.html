@@ -26,6 +26,7 @@
         }
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/componentes.css') }}">
     {% block extra_css %}{% endblock %}
 </head>
 <body class="flex flex-col min-h-full font-sans text-slate-900 antialiased selection:bg-abruem-500 selection:text-white">
@@ -39,6 +40,7 @@
     {% include 'layouts/footer.html' %}
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/graficos.js') }}"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

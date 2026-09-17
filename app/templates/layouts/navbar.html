@@ -10,14 +10,33 @@
             </div>
         </a>
 
-        <!-- Menu Principal Público -->
-        <nav class="hidden md:flex items-center gap-1 text-sm font-medium text-slate-600">
-            <a href="{{ url_for('home.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Força da Rede</a>
-            <a href="{{ url_for('regioes.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Regiões</a>
-            <a href="{{ url_for('universidades.lista') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Universidades</a>
-            <a href="{{ url_for('comparador.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Comparador</a>
-            <a href="{{ url_for('explorar.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Explorar</a>
-            <a href="{{ url_for('metodologia.index') }}" class="px-3 py-2 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Metodologia</a>
+        <!-- Menu Principal Público com Dimensões Integradas -->
+        <nav class="hidden lg:flex items-center gap-1 text-sm font-medium text-slate-600">
+            <a href="{{ url_for('home.index') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Força da Rede</a>
+            <a href="{{ url_for('regioes.index') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Regiões</a>
+            <a href="{{ url_for('universidades.lista') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Universidades</a>
+            <a href="{{ url_for('comparador.index') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Comparador</a>
+            
+            <!-- Menu Dropdown de Dimensões -->
+            <div class="relative group">
+                <button type="button" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition inline-flex items-center gap-1">
+                    Dimensões
+                    <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                    </svg>
+                </button>
+                <div class="absolute left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                    <a href="{{ url_for('dimensoes.academico') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Acadêmico</a>
+                    <a href="{{ url_for('dimensoes.pessoas') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Pessoas</a>
+                    <a href="{{ url_for('dimensoes.financas') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Finanças</a>
+                    <a href="{{ url_for('dimensoes.eficiencia') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Eficiência</a>
+                    <a href="{{ url_for('dimensoes.custo_aluno') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Custo-Aluno</a>
+                    <a href="{{ url_for('dimensoes.convenios') }}" class="block px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 font-medium">Convênios</a>
+                </div>
+            </div>
+
+            <a href="{{ url_for('explorar.index') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Explorar</a>
+            <a href="{{ url_for('metodologia.index') }}" class="px-2.5 py-1.5 rounded-md hover:bg-slate-100 hover:text-slate-900 transition">Metodologia</a>
         </nav>
 
         <!-- Sessão / Autenticação -->

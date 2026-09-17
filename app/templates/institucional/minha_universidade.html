@@ -1,133 +1,196 @@
 {% extends 'layouts/base.html' %}
 
-{% block title %}Central de Atualização — {{ universidade.sigla }}{% endblock %}
+{% block title %}Central de Atualização · Plataforma Maria Firmina{% endblock %}
 
 {% block content %}
-<div class="mb-8 border-b border-slate-200 pb-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-    <div>
-        <div class="flex items-center gap-2 mb-1">
-            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold bg-abruem-50 text-abruem-600 border border-abruem-100 uppercase">
-                {{ universidade.sigla }}
-            </span>
-            <span class="text-xs text-slate-400">{{ universidade.nome }}</span>
-        </div>
-        <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Central de Atualização Institucional</h1>
-        <p class="text-sm text-slate-500 mt-0.5">Preencha os dados requeridos. Ao enviar, o lote entra na fila de validação da Câmara.</p>
+<div class="mb-6 border-b border-slate-200 pb-5">
+    <span class="text-xs font-bold uppercase tracking-wider text-abruem-600 block mb-1">ÁREA INSTITUCIONAL</span>
+    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Central de Atualização {{ universidade.sigla }}</h1>
+    <p class="text-sm text-slate-500 mt-1">Informe apenas o que precisa ser informado. O restante a plataforma calcula.</p>
+</div>
+
+<!-- Card do Ciclo e Contadores -->
+<div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
+    <div class="md:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-abruem-600 bg-abruem-50 px-2 py-0.5 rounded border border-abruem-100">Ciclo aberto</span>
+        <h2 class="text-base font-bold text-slate-900 mt-2">Campanha 2026 — Núcleo Essencial</h2>
+        <p class="text-xs text-slate-500 mt-1 leading-relaxed">
+            Primeiro ciclo de coleta da Rede ABRUEM. Nenhum indicador derivado é solicitado: a plataforma os calcula a partir do que a instituição informar.
+        </p>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
+        <span class="text-xs font-semibold text-slate-400 block">Validados pela Câmara</span>
+        <div class="text-3xl font-extrabold text-emerald-600 my-1">{{ total_validados }}</div>
+        <span class="text-[11px] text-slate-400">Alimentam os painéis da rede</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
+        <span class="text-xs font-semibold text-slate-400 block">Aguardando validação</span>
+        <div class="text-3xl font-extrabold text-amber-600 my-1">{{ total_aguardando }}</div>
+        <span class="text-[11px] text-slate-400">Em análise pela Câmara</span>
+    </div>
+    <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
+        <span class="text-xs font-semibold text-slate-400 block">Em rascunho</span>
+        <div class="text-3xl font-extrabold text-slate-900 my-1">{{ total_rascunhos }}</div>
+        <span class="text-[11px] text-slate-400">Ainda não enviados</span>
+    </div>
+</div>
+
+<!-- Bloco: Preencher uma Série de uma Vez (Sem filtro de fonte) -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-10">
+    <div class="border-b border-slate-100 pb-3 mb-5">
+        <h3 class="text-base font-bold text-slate-900">Preencher uma série de uma vez</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Informe os valores para múltiplos exercícios de uma única vez.</p>
     </div>
 
-    <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="flex flex-wrap items-center gap-2">
-        {% if is_admin %}
-            <div>
-                <label for="universidade_id" class="sr-only">Universidade:</label>
-                <select name="universidade_id" id="universidade_id" onchange="this.form.submit()"
-                        class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
-                    {% for u in universidades_disponiveis %}
-                        <option value="{{ u.id }}" {% if u.id == universidade.id %}selected{% endif %}>
-                            {{ u.sigla }} — {{ u.nome }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-        {% else %}
-            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-        {% endif %}
+    <form method="POST" action="{{ url_for('minha_universidade.salvar_serie') }}" class="space-y-5">
+        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
 
         <div>
-            <label for="ano" class="sr-only">Exercício:</label>
-            <select name="ano" id="ano" onchange="this.form.submit()" 
-                    class="rounded-lg border-slate-300 text-xs font-semibold text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
-                {% for a in [2024, 2023, 2022] %}
-                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>Exercício {{ a }}</option>
+            <label for="indicador_id" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Indicador:</label>
+            <select name="indicador_id" id="indicador_id" required 
+                    class="w-full max-w-md rounded-lg border-slate-300 text-sm font-semibold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                {% for ind in indicadores_digitaveis %}
+                    <option value="{{ ind.id }}">{{ ind.nome }}</option>
                 {% endfor %}
             </select>
         </div>
+
+        <div>
+            <span class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Valores por exercício (número):</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
+                {% for a in anos_ciclo %}
+                <div>
+                    <label for="val_{{ a }}" class="block text-xs font-semibold text-slate-500 mb-1">{{ a }}</label>
+                    <input type="text" name="valor_{a}" id="val_{{ a }}" placeholder="-" 
+                           class="input-valor w-full rounded-lg border-slate-300 text-sm font-bold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
+                </div>
+                {% endfor %}
+            </div>
+            <p class="text-[11px] text-slate-400 mt-2">Deixe em branco o exercício que a instituição não informa — em branco significa ausência.</p>
+        </div>
+
+        <div>
+            <label for="observacao" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Observação metodológica (opcional):</label>
+            <textarea name="observacao" id="observacao" rows="2" placeholder="Recorte adotado, componentes somados, data de corte..." 
+                      class="w-full max-w-2xl rounded-lg border-slate-300 text-xs text-slate-800 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 p-2.5"></textarea>
+        </div>
+
+        <button type="submit" class="px-5 py-2.5 bg-abruem-800 text-white rounded-lg text-xs font-bold hover:bg-abruem-900 shadow-sm transition">
+            Salvar série
+        </button>
     </form>
 </div>
 
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+<!-- Bloco: O que este ciclo pede (Grid de Edição Direta por Célula) -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-10">
+    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <h3 class="text-base font-bold text-slate-900">O que este ciclo pede</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Digite direto na célula: o valor é salvo sozinho como rascunho. Enter desce para o próximo indicador, Tab anda pelos exercícios.</p>
+        </div>
+        <form method="POST" action="{{ url_for('minha_universidade.enviar_lote') }}">
+            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+            <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-sm transition">
+                Enviar {{ total_rascunhos }} registro(s) para validação
+            </button>
+        </form>
+    </div>
+
     <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-600">
+        <table class="w-full text-left text-sm text-slate-600 border-collapse">
             <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                 <tr>
-                    <th scope="col" class="px-6 py-3.5 w-1/4">Indicador</th>
-                    <th scope="col" class="px-6 py-3.5 w-1/12">Tipo</th>
-                    <th scope="col" class="px-6 py-3.5 w-1/4">Valor Declarado</th>
-                    <th scope="col" class="px-6 py-3.5 text-center w-1/6">Status</th>
-                    <th scope="col" class="px-6 py-3.5 text-center w-1/6">Ação / Envio</th>
+                    <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
+                    {% for a in anos_ciclo %}
+                        <th scope="col" class="px-4 py-3.5 text-center w-1/6 font-bold text-slate-800">{{ a }}</th>
+                    {% endfor %}
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-                {% for ind in indicadores %}
-                {% set reg = registros.get(ind.id) %}
+                {% for ind in indicadores_digitaveis %}
                 <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-3.5">
                         <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
-                        <span class="font-mono text-xs text-slate-400 block">{{ ind.codigo }}</span>
+                        <span class="text-[11px] font-mono text-slate-400 block">{{ ind.codigo }} · obrigatório</span>
                     </td>
-                    <td class="px-6 py-4 text-xs text-slate-500">{{ ind.tipo_dado }}</td>
-                    <td class="px-6 py-4">
-                        {% if ind.is_calculado() %}
-                            <span class="font-semibold text-slate-800 text-sm">
-                                {% if reg and reg.valor_numerico is not none %}
-                                    {% if ind.tipo_dado == 'MONETARIO' %}{{ reg.valor_numerico | moeda_br }}{% else %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}
-                                {% else %}
-                                    <em class="text-xs text-slate-400 font-normal">Calculado automaticamente</em>
-                                {% endif %}
-                            </span>
-                        {% else %}
-                            <form method="POST" action="{{ url_for('minha_universidade.salvar_indicador') }}" class="form-inline-valor" id="form-{{ ind.id }}">
-                                <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-                                <input type="hidden" name="indicador_id" value="{{ ind.id }}">
-                                <input type="hidden" name="ano_referencia" value="{{ ano }}">
-                                
-                                <input type="text" name="valor" 
-                                       value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}"
-                                       class="input-valor w-36 rounded-md border-slate-300 text-xs font-semibold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-1.5 px-2" 
-                                       placeholder="0,00"
-                                       {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] %}disabled{% endif %}>
-                        {% endif %}
+                    {% for a in anos_ciclo %}
+                    {% set reg = matriz[ind.id][a] %}
+                    <td class="px-4 py-3.5 text-center">
+                        <input type="text" 
+                               data-uni="{{ universidade.id }}" 
+                               data-ind="{{ ind.id }}" 
+                               data-ano="{{ a }}"
+                               value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(0) }}{% endif %}"
+                               placeholder="-"
+                               {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] %}disabled{% endif %}
+                               class="celula-rapida w-24 text-center py-1 px-2 border rounded text-xs font-bold text-slate-900 focus:border-abruem-500 focus:ring-1 focus:ring-abruem-500 
+                               {% if reg and reg.status_dado == 'VALIDADO' %}bg-emerald-50/50 border-emerald-300 text-emerald-800{% elif reg and reg.status_dado == 'ENVIADO' %}bg-amber-50/50 border-amber-300{% else %}border-slate-300 bg-white{% endif %}">
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        {% if reg %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold
-                                {% if reg.status_dado == 'VALIDADO' %} bg-emerald-50 text-emerald-700 border border-emerald-200
-                                {% elif reg.status_dado == 'ENVIADO' %} bg-amber-50 text-amber-700 border border-amber-200
-                                {% elif reg.status_dado == 'DEVOLVIDO' %} bg-rose-50 text-rose-700 border border-rose-200
-                                {% else %} bg-slate-100 text-slate-700 border border-slate-200 {% endif %}">
-                                {{ reg.status_dado }}
-                            </span>
-                            {% if reg.status_dado == 'DEVOLVIDO' and reg.parecer_devolucao %}
-                                <span class="text-[11px] text-rose-600 block mt-1 leading-tight font-medium">Motivo: {{ reg.parecer_devolucao }}</span>
-                            {% endif %}
-                        {% else %}
-                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-400">PENDENTE</span>
-                        {% endif %}
-                    </td>
-                    <td class="px-6 py-4 text-center">
-                        {% if not ind.is_calculado() %}
-                            {% if not reg or reg.status_dado in ['RASCUNHO', 'DEVOLVIDO'] %}
-                                <div class="flex items-center justify-center gap-1.5">
-                                    <button type="submit" name="acao" value="salvar_rascunho" 
-                                            class="px-2.5 py-1 rounded border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm">
-                                        Rascunho
-                                    </button>
-                                    <button type="submit" name="acao" value="enviar" 
-                                            class="px-2.5 py-1 rounded bg-abruem-800 text-white text-xs font-semibold hover:bg-abruem-900 transition shadow-sm">
-                                        Enviar
-                                    </button>
-                                </div>
-                            {% else %}
-                                <span class="text-xs font-semibold text-emerald-600">Submetido</span>
-                            {% endif %}
-                            </form>
-                        {% else %}
-                            <span class="text-xs text-slate-400 font-medium">Automático</span>
-                        {% endif %}
-                    </td>
+                    {% endfor %}
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
+</div>
+
+<!-- Bloco: O que a plataforma calcula a partir do que você informou -->
+<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-12">
+    <div class="p-6 border-b border-slate-100">
+        <h3 class="text-base font-bold text-slate-900">O que a plataforma calcula a partir do que você informou</h3>
+        <p class="text-xs text-slate-500 mt-0.5">Estes indicadores não são digitados e não entram na sua lista de tarefas. Aparecem aqui para conferência do retorno.</p>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm text-slate-600 border-collapse">
+            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                <tr>
+                    <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
+                    {% for a in anos_ciclo %}
+                        <th scope="col" class="px-4 py-3.5 text-center w-1/6 font-bold text-slate-800">{{ a }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for ind in indicadores_calculados %}
+                <tr class="hover:bg-slate-50/80 transition-colors bg-purple-50/20">
+                    <td class="px-6 py-3.5">
+                        <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
+                        <span class="text-[11px] font-mono text-purple-700 block">{{ ind.codigo }} · {{ ind.unidade_medida }}</span>
+                    </td>
+                    {% for a in anos_ciclo %}
+                    {% set reg = matriz[ind.id][a] %}
+                    <td class="px-4 py-3.5 text-center font-extrabold text-slate-900">
+                        {% if reg and reg.valor_numerico is not none %}
+                            {% if ind.tipo_dado == 'MONETARIO' %}{{ reg.valor_numerico | moeda_br }}{% else %}{{ reg.valor_numerico | numero_br(2) }}{% endif %}
+                        {% else %}
+                            <span class="text-slate-300 font-normal">-</span>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Responsáveis Institucionais -->
+<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-12">
+    <h3 class="text-base font-bold text-slate-900 mb-1">Responsáveis institucionais</h3>
+    <p class="text-xs text-slate-500 mb-4">Quem responde por esta instituição perante a Câmara.</p>
+    {% if responsaveis %}
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {% for r in responsaveis %}
+            <div class="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs">
+                <strong class="block font-bold text-slate-900">{{ r.nome }}</strong>
+                <span class="text-slate-500 block">{{ r.cargo }}</span>
+                <span class="text-abruem-600 block mt-1 font-mono">{{ r.email }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <span class="text-xs text-slate-400 italic">Nenhum responsável cadastrado.</span>
+    {% endif %}
 </div>
 {% endblock %}

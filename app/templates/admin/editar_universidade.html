@@ -1,0 +1,95 @@
+{% extends 'layouts/base.html' %}
+
+{% block title %}Editar Instituição · {{ universidade.sigla }}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col lg:flex-row items-start gap-8">
+    {% include 'layouts/sidebar_admin.html' %}
+    
+    <div class="flex-1 w-full max-w-3xl space-y-6">
+        <div class="border-b border-slate-200 pb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-abruem-600 block mb-1">GESTÃO DA REDE</span>
+            <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">Editar {{ universidade.sigla }}</h1>
+            <p class="text-xs text-slate-500 mt-0.5">Atualize os parâmetros cadastrais e a condição de autonomia financeira.</p>
+        </div>
+
+        <form method="POST" action="{{ url_for('admin.editar_universidade', id=universidade.id) }}" class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-5">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Sigla</label>
+                    <input type="text" name="sigla" value="{{ universidade.sigla }}" required
+                           class="w-full rounded-lg border-slate-300 text-sm font-bold text-slate-900 bg-white shadow-sm p-2.5">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">UF</label>
+                    <input type="text" name="uf" value="{{ universidade.uf }}" maxlength="2" required
+                           class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm p-2.5">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Nome Oficial da Instituição</label>
+                <input type="text" name="nome" value="{{ universidade.nome }}" required
+                       class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm p-2.5">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Tipo / Esfera</label>
+                    <select name="tipo" class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm p-2.5">
+                        <option value="ESTADUAL" {% if universidade.tipo == 'ESTADUAL' %}selected{% endif %}>Estadual</option>
+                        <option value="MUNICIPAL" {% if universidade.tipo == 'MUNICIPAL' %}selected{% endif %}>Municipal</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Região</label>
+                    <select name="regiao" class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm p-2.5">
+                        {% for r in ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul'] %}
+                            <option value="{{ r }}" {% if universidade.regiao | lower == r | lower %}selected{% endif %}>{{ r }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Município Sede</label>
+                    <input type="text" name="municipio_sede" value="{{ universidade.municipio_sede or '' }}"
+                           class="w-full rounded-lg border-slate-300 text-sm text-slate-900 bg-white shadow-sm p-2.5">
+                </div>
+            </div>
+
+            <!-- Campo de Autonomia Financeira -->
+            <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-700 mb-2">
+                    Autonomia Orçamentária-Financeira
+                </label>
+                <div class="flex items-center gap-6">
+                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-800 cursor-pointer">
+                        <input type="radio" name="autonomia_financeira" value="1" {% if universidade.autonomia_financeira == 1 %}checked{% endif %}
+                               class="text-abruem-600 focus:ring-abruem-500">
+                        Sim (Possui autonomia)
+                    </label>
+                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-800 cursor-pointer">
+                        <input type="radio" name="autonomia_financeira" value="0" {% if universidade.autonomia_financeira == 0 %}checked{% endif %}
+                               class="text-abruem-600 focus:ring-abruem-500">
+                        Não
+                    </label>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-2">
+                    Essa informação condiciona o filtro na tela do Comparador Institucional.
+                </p>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+                <a href="{{ url_for('admin.universidades') }}" class="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-5 py-2.5 bg-abruem-800 text-white rounded-lg text-xs font-bold hover:bg-abruem-900 shadow-sm transition">
+                    Salvar Alterações
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

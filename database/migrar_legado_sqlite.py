@@ -2,91 +2,49 @@ import sqlite3
 import sys
 from pathlib import Path
 
-RAIZ = Path(__file__).resolve().parent.parent
-DB_PATH = RAIZ / 'data' / 'abruem.sqlite'
+# Adiciona raiz ao path de importação
+RAIZ = Path(__file__).resolve().parent.parent.parent
+if str(RAIZ) not in sys.path:
+    sys.path.insert(0, str(RAIZ))
 
-def migrar_e_compatibilizar():
-    conn = sqlite3.connect(str(DB_PATH))
+from config.settings import Config
+
+def migrar():
+    """
+    Aplica a migração para adicionar a coluna 'autonomia_financeira'
+    à tabela 'universidades' no SQLite caso ela ainda não exista.
+    Garante integridade e evita duplicação de schema.
+    """
+    db_path = Path(Config.DB_PATH)
+    if not db_path.exists():
+        print(f"[ERRO] Banco de dados não localizado em: {db_path}")
+        return
+
+    print(f"Executando migração no banco: {db_path}")
+    conn = sqlite3.connect(str(db_path))
     cursor = conn.cursor()
 
-    print("Verificando estrutura do abruem.sqlite...")
+    try:
+        # Verifica se a coluna já existe no pragma
+        cursor.execute("PRAGMA table_info(universidades);")
+        colunas = [coluna[1] for coluna in cursor.fetchall()]
 
-    # Garante views ou tabelas para compatibilidade entre o código legado e a arquitetura MVC
-    cursor.execute("""
-        CREATE VIEW IF NOT EXISTS registro_dados AS
-        SELECT 
-            id,
-            universidade_id,
-            indicador_id,
-            ano_referencia,
-            valor as valor_numerico,
-            NULL as valor_texto,
-            situacao as status_dado,
-            origem as fonte_tipo,
-            documento as fonte_descricao,
-            url_documento as fonte_url,
-            parecer as parecer_devolucao,
-            atualizado_por,
-            atualizado_em as criado_em,
-            atualizado_em
-        FROM observacao;
-    """)
+        if 'autonomia_financeira' not in colunas:
+            print("Adicionando coluna 'autonomia_financeira' (INTEGER DEFAULT 0)...")
+            cursor.execute("""
+                ALTER TABLE universidades 
+                ADD COLUMN autonomia_financeira INTEGER DEFAULT 0;
+            """)
+            conn.commit()
+            print("[SUCESSO] Coluna 'autonomia_financeira' criada com sucesso!")
+        else:
+            print("[INFO] Coluna 'autonomia_financeira' já existe no banco.")
 
-    cursor.execute("""
-        CREATE VIEW IF NOT EXISTS universidades AS
-        SELECT 
-            universidade_id as id,
-            sigla,
-            nome,
-            esfera as tipo,
-            uf,
-            regiao,
-            pagina_planejamento as municipio_sede,
-            2022 as ano_filiacao,
-            CASE WHEN ativa = 1 THEN 'ATIVA' ELSE 'INATIVA' END as status,
-            CURRENT_TIMESTAMP as criado_em
-        FROM universidade;
-    """)
-
-    cursor.execute("""
-        CREATE VIEW IF NOT EXISTS usuarios AS
-        SELECT 
-            id,
-            nome,
-            email,
-            senha_hash,
-            perfil,
-            universidade_id,
-            trocar_senha as precisa_trocar_senha,
-            ativo,
-            criado_em
-        FROM usuario;
-    """)
-
-    cursor.execute("""
-        CREATE VIEW IF NOT EXISTS indicadores AS
-        SELECT 
-            indicador_id as id,
-            indicador_id as codigo,
-            nome,
-            dimensao,
-            CASE 
-                WHEN unidade = 'BRL' THEN 'MONETARIO'
-                WHEN unidade = '%' THEN 'PERCENTUAL'
-                ELSE 'INTEIRO'
-            END as tipo_dado,
-            tipo_agregacao,
-            CASE WHEN derivado = 1 THEN 'CALCULADO' ELSE 'INFORMADO' END as origem,
-            unidade as unidade_medida,
-            definicao as descricao,
-            coleta_institucional as obrigatorio,
-            ativo
-        FROM indicador;
-    """)
-
-    conn.commit()
-    conn.close()
-    print("Base compatibilizada com sucesso! Todos os dados legados estão ativos e linkados.")
+    except Exception as e:
+        conn.rollback()
+        print(f"[ERRO] Falha ao aplicar migração: {e}")
+    finally:
+        conn.close()
 
 if __name__ == '__main__':
-    migrar_e_compatibilizar()
+    migrar()

@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS universidades (
     municipio_sede TEXT,
     ano_filiacao INTEGER,
     status TEXT DEFAULT 'ATIVA',
+    autonomia_financeira INTEGER DEFAULT 0,
     criado_em DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -139,8 +140,14 @@ def inicializar():
     try:
         cursor = conn.cursor()
         cursor.executescript(SCHEMA_SQLITE)
+
+        # Garante a coluna na tabela existente sem derrubar ou recriar a base
+        cursor.execute("PRAGMA table_info(universidades);")
+        colunas = [c[1] for c in cursor.fetchall()]
+        if 'autonomia_financeira' not in colunas:
+            cursor.execute("ALTER TABLE universidades ADD COLUMN autonomia_financeira INTEGER DEFAULT 0;")
+        
         conn.commit()
-        print("Tabelas SQLite criadas/verificadas com sucesso em:", caminho_db)
     finally:
         conn.close()
 

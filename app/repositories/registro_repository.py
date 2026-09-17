@@ -24,6 +24,63 @@ class RegistroRepository(BaseRepository):
         sql += " ORDER BY i.dimensao ASC, i.nome ASC"
         return self.executar_consulta(sql, (universidade_id, ano_referencia))
 
+    def listar_serie_historica_indicador(self, universidade_id, indicador_id, anos=(2022, 2023, 2024, 2025)):
+        """
+        Recupera a série temporal de um indicador para uma universidade específica.
+        Retorna dicionário mapeando ano -> valor_numerico.
+        """
+        placeholders = ','.join(['%s'] * len(anos))
+        sql = f"""
+            SELECT ano_referencia, valor_numerico
+            FROM registro_dados
+            WHERE universidade_id = %s 
+              AND indicador_id = %s 
+              AND ano_referencia IN ({placeholders})
+              AND status_dado = 'VALIDADO'
+            ORDER BY ano_referencia ASC
+        """
+        params = [universidade_id, indicador_id] + list(anos)
+        linhas = self.executar_consulta(sql, params)
+        return {l['ano_referencia']: l['valor_numerico'] for l in linhas if l.get('valor_numerico') is not None}
+
+    def listar_series_comparador(self, universidade_ids, indicador_id, anos=(2022, 2023, 2024, 2025)):
+        """
+        Recupera as séries de múltiplas universidades para o comparador.
+        Aplica estritamente a regra: apenas universidades que tiverem dados no indicador
+        são retornadas. Universidades sem dados são isoladas/omitidas do gráfico.
+        """
+        if not universidade_ids:
+            return {}
+
+        ph_unis = ','.join(['%s'] * len(universidade_ids))
+        ph_anos = ','.join(['%s'] * len(anos))
+        sql = f"""
+            SELECT r.universidade_id, u.sigla, r.ano_referencia, r.valor_numerico
+            FROM registro_dados r
+            INNER JOIN universidades u ON r.universidade_id = u.id
+            WHERE r.universidade_id IN ({ph_unis})
+              AND r.indicador_id = %s
+              AND r.ano_referencia IN ({ph_anos})
+              AND r.status_dado = 'VALIDADO'
+              AND r.valor_numerico IS NOT NULL
+            ORDER BY u.sigla ASC, r.ano_referencia ASC
+        """
+        params = list(universidade_ids) + [indicador_id] + list(anos)
+        linhas = self.executar_consulta(sql, params)
+
+        resultado = {}
+        for l in linhas:
+            sigla = l['sigla']
+            if sigla not in resultado:
+                resultado[sigla] = {
+                    'universidade_id': l['universidade_id'],
+                    'sigla': sigla,
+                    'pontos': {}
+                }
+            resultado[sigla]['pontos'][l['ano_referencia']] = l['valor_numerico']
+
+        return resultado
+
     def listar_submissoes_pendentes(self):
         sql = """
             SELECT r.*, u.sigla as universidade_sigla, u.nome as universidade_nome,
@@ -39,11 +96,6 @@ class RegistroRepository(BaseRepository):
         return self.executar_consulta(sql)
 
     def salvar(self, reg):
-        """
-        Insere ou atualiza o registro verificando a existência prévia da chave única
-        (universidade_id, indicador_id, ano_referencia), garantindo compatibilidade
-        universal com SQLite local e MySQL em produção.
-        """
         val_num = round(reg.valor_numerico, 4) if reg.valor_numerico is not None else None
         registro_existente = self.buscar_por_chave(reg.universidade_id, reg.indicador_id, reg.ano_referencia)
 
