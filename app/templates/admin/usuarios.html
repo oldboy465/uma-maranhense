@@ -9,7 +9,7 @@
     <div class="flex-1 w-full space-y-8">
         <div class="border-b border-slate-200 pb-5">
             <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Gestão de Usuários do Sistema</h1>
-            <p class="text-sm text-slate-500 mt-1">Controle de credenciais, perfis de acesso e vinculação institucional às filiadas[cite: 10].</p>
+            <p class="text-sm text-slate-500 mt-1">Controle de credenciais, perfis de acesso, redefinição de senhas e vinculação institucional às filiadas.</p>
         </div>
 
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -18,17 +18,19 @@
                     <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
                         <tr>
                             <th scope="col" class="px-6 py-3.5 w-1/4">Nome</th>
-                            <th scope="col" class="px-6 py-3.5 w-1/4">E-mail Institucional</th>
-                            <th scope="col" class="px-6 py-3.5 w-1/5">Perfil de Acesso</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Login / E-mail</th>
+                            <th scope="col" class="px-6 py-3.5 w-1/6">Perfil de Acesso</th>
                             <th scope="col" class="px-6 py-3.5">Instituição</th>
+                            <th scope="col" class="px-6 py-3.5 text-center">Status Senha</th>
                             <th scope="col" class="px-6 py-3.5 text-center">Situação</th>
+                            <th scope="col" class="px-6 py-3.5 text-right">Ações</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-slate-100">
                         {% for u in usuarios %}
                         <tr class="hover:bg-slate-50/80 transition-colors">
                             <td class="px-6 py-4 font-bold text-slate-900">{{ u.nome }}</td>
-                            <td class="px-6 py-4 text-xs font-mono text-slate-600">{{ u.email }}</td>
+                            <td class="px-6 py-4 text-xs font-mono font-bold text-abruem-800">{{ u.email }}</td>
                             <td class="px-6 py-4">
                                 {% if u.perfil == 'ADMIN_CAMARA' %}
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200">Administrador Câmara</span>
@@ -36,7 +38,24 @@
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">Gestor Institucional</span>
                                 {% endif %}
                             </td>
-                            <td class="px-6 py-4 font-semibold text-slate-700">{{ u.universidade_sigla or 'Câmara Geral' }}</td>
+                            <td class="px-6 py-4 font-semibold text-slate-700">
+                                {% if u.universidade_sigla %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-slate-100 text-slate-800">{{ u.universidade_sigla }}</span>
+                                {% else %}
+                                    <span class="text-xs text-slate-400">Câmara Geral</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                {% if u.precisa_trocar_senha %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200" title="Usuário deve alterar a senha no primeiro login">
+                                        Provisória (123456)
+                                    </span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Definida
+                                    </span>
+                                {% endif %}
+                            </td>
                             <td class="px-6 py-4 text-center">
                                 {% if u.ativo %}
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">Ativo</span>
@@ -44,10 +63,21 @@
                                     <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">Inativo</span>
                                 {% endif %}
                             </td>
+                            <td class="px-6 py-4 text-right">
+                                {% if u.perfil != 'ADMIN_CAMARA' %}
+                                <form method="POST" action="{{ url_for('admin.resetar_senha_usuario', usuario_id=u.id) }}" onsubmit="return confirm('Tem certeza de que deseja redefinir a senha deste utilizador para 123456? A troca será forçada no próximo login.');" class="inline">
+                                    <button type="submit" class="inline-flex items-center px-2.5 py-1 bg-white border border-rose-300 hover:bg-rose-50 text-rose-700 rounded text-xs font-bold transition shadow-sm">
+                                        Resetar Senha
+                                    </button>
+                                </form>
+                                {% else %}
+                                    <span class="text-xs text-slate-400 font-mono">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% else %}
                         <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum usuário cadastrado.</td>
+                            <td colspan="7" class="px-6 py-8 text-center text-sm text-slate-400">Nenhum usuário cadastrado.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

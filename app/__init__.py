@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, session, request, redirect, url_for
 from config.settings import Config
 
 def create_app(config_class=Config):
@@ -54,6 +54,20 @@ def create_app(config_class=Config):
             return moeda_br_filter(valor)
         except (ValueError, TypeError):
             return "R$ 0,0"
+
+    # Interceptador Global para Troca de Senha Forcada
+    @app.before_request
+    def forcar_troca_senha_obrigatoria():
+        """
+        Bloqueia navegacao de qualquer usuario autenticado que possua a flag
+        precisa_trocar_senha = True, direcionando-o exclusivamente para /trocar-senha.
+        Permite apenas acesso a rota de troca, logout e arquivos estaticos.
+        """
+        if session.get('usuario_id') and session.get('precisa_trocar_senha'):
+            endpoint_atual = request.endpoint or ''
+            rotas_permitidas = ['auth.trocar_senha', 'auth.logout', 'static']
+            if endpoint_atual not in rotas_permitidas and not endpoint_atual.startswith('static.'):
+                return redirect(url_for('auth.trocar_senha'))
 
     # Registro de Blueprints (Controllers)
     from app.controllers.home_controller import home_bp

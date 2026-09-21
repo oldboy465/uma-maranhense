@@ -10,24 +10,29 @@ auth_bp = Blueprint('auth', __name__)
 @auth_bp.route('/login', methods=['GET', 'POST'])
 def login():
     if AuthService.esta_autenticado():
+        usuario_atual = AuthService.usuario_atual()
+        if usuario_atual and usuario_atual.get('precisa_trocar_senha'):
+            return redirect(url_for('auth.trocar_senha'))
         if AuthService.exigir_admin():
             return redirect(url_for('admin.painel'))
         return redirect(url_for('minha_universidade.painel'))
 
     if request.method == 'POST':
-        email = request.form.get('email', '').strip()
+        login_ou_email = request.form.get('email', '').strip()
         senha = request.form.get('senha', '')
 
         auth_service = AuthService()
-        usuario, erro = auth_service.autenticar(email, senha)
+        usuario, erro = auth_service.autenticar(login_ou_email, senha)
 
         if erro:
             flash(erro, 'danger')
-            return render_template('public/login.html', email=email)
+            return render_template('public/login.html', email=login_ou_email)
 
-        AuditoriaService().registrar_evento('usuarios', 'LOGIN', dados_novos={'email': email})
+        AuditoriaService().registrar_evento('usuarios', 'LOGIN', dados_novos={'login': login_ou_email})
 
+        # Redirecionamento mandatorio no primeiro acesso
         if usuario.precisa_trocar_senha:
+            flash('Por segurança institucional, altere sua senha de acesso inicial.', 'warning')
             return redirect(url_for('auth.trocar_senha'))
 
         if usuario.is_admin():
@@ -61,6 +66,10 @@ def trocar_senha():
             flash('As senhas digitadas não coincidem.', 'danger')
             return render_template('institucional/trocar_senha.html')
 
+        if nova_senha == '123456':
+            flash('A nova senha não pode ser a senha padrão 123456.', 'warning')
+            return render_template('institucional/trocar_senha.html')
+
         hash_senha = generate_password_hash(nova_senha)
         user_id = session.get('usuario_id')
         
@@ -68,8 +77,8 @@ def trocar_senha():
         repo.alterar_senha(user_id, hash_senha)
         session['precisa_trocar_senha'] = False
 
-        AuditoriaService().registrar_evento('usuarios', 'UPDATE', dados_novos={'acao': 'troca_senha'})
-        flash('Senha atualizada com sucesso!', 'success')
+        AuditoriaService().registrar_evento('usuarios', 'UPDATE', dados_novos={'acao': 'troca_senha_efetuada'})
+        flash('Senha atualizada com sucesso! Acesso regular liberado.', 'success')
 
         if AuthService.exigir_admin():
             return redirect(url_for('admin.painel'))

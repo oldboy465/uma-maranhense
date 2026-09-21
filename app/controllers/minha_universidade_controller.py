@@ -22,6 +22,7 @@ def painel():
     is_admin = (usuario.get('perfil') == 'ADMIN_CAMARA')
     universidades_disponiveis = uni_repo.listar_todas(apenas_ativas=True) if is_admin else []
 
+    # Se for admin, permite transitar entre instituicoes. Se for universidade, bloqueia no proprio ID
     if is_admin:
         default_uni = usuario.get('universidade_id') or (universidades_disponiveis[0].id if universidades_disponiveis else 'U31')
         uni_id = request.args.get('universidade_id', default_uni)
@@ -88,13 +89,14 @@ def painel():
 def salvar_serie():
     """
     Preenche uma série de uma vez (2022 a 2025) para um único indicador.
-    O filtro de 'fonte dos dados' foi completamente removido conforme o acordo de 16-09-2026.
+    Valida estritamente a permissao de escrita da universidade logada.
     """
     if not AuthService.esta_autenticado():
         return redirect(url_for('auth.login'))
 
     uni_id = request.form.get('universidade_id')
     if not AuthService.exigir_escrita_universidade(uni_id):
+        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_escrita_serie', 'alvo': uni_id})
         abort(403)
 
     ind_id = request.form.get('indicador_id')
@@ -145,13 +147,15 @@ def salvar_serie():
 def salvar_celula():
     """
     Gravação rápida de célula avulsa com salvamento em rascunho.
+    Valida estritamente a permissao de escrita da universidade logada.
     """
     if not AuthService.esta_autenticado():
         return {'erro': 'Não autenticado'}, 401
 
     uni_id = request.form.get('universidade_id')
     if not AuthService.exigir_escrita_universidade(uni_id):
-        return {'erro': 'Acesso não autorizado'}, 403
+        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_escrita_celula', 'alvo': uni_id})
+        return {'erro': 'Acesso não autorizado para esta universidade'}, 403
 
     ind_id = request.form.get('indicador_id')
     ano = int(request.form.get('ano_referencia'))
@@ -181,15 +185,18 @@ def salvar_celula():
 
 @minha_universidade_bp.route('/enviar-lote', methods=['POST'])
 def enviar_lote():
+    """
+    Submete os rascunhos para a fila de homologacao formal da Camara.
+    """
     if not AuthService.esta_autenticado():
         return redirect(url_for('auth.login'))
 
     uni_id = request.form.get('universidade_id')
     if not AuthService.exigir_escrita_universidade(uni_id):
+        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_envio_lote', 'alvo': uni_id})
         abort(403)
 
     reg_repo = RegistroRepository()
-    # Atualiza todos os rascunhos da universidade para ENVIADO
     sql = """
         UPDATE registro_dados 
         SET status_dado = 'ENVIADO' 

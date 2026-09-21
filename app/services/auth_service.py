@@ -5,8 +5,14 @@ class AuthService:
     def __init__(self):
         self.usuario_repo = UsuarioRepository()
 
-    def autenticar(self, email, senha):
-        usuario = self.usuario_repo.buscar_por_email(email)
+    def autenticar(self, login_ou_email, senha):
+        """
+        Autentica o usuario aceitando login pela sigla (ex: uema, udesc),
+        pelo e-mail institucional ou usuario admin.
+        """
+        identificador = (login_ou_email or '').strip()
+        usuario = self.usuario_repo.buscar_por_identificador(identificador)
+
         if not usuario or not usuario.ativo:
             return None, "Usuário inativo ou não localizado."
         
@@ -20,7 +26,7 @@ class AuthService:
         session['email'] = usuario.email
         session['perfil'] = usuario.perfil
         session['universidade_id'] = usuario.universidade_id
-        session['precisa_trocar_senha'] = usuario.precisa_trocar_senha
+        session['precisa_trocar_senha'] = bool(usuario.precisa_trocar_senha)
 
         return usuario, None
 
@@ -37,7 +43,7 @@ class AuthService:
             'email': session.get('email'),
             'perfil': session.get('perfil'),
             'universidade_id': session.get('universidade_id'),
-            'precisa_trocar_senha': session.get('precisa_trocar_senha')
+            'precisa_trocar_senha': session.get('precisa_trocar_senha', False)
         }
 
     @staticmethod
@@ -50,6 +56,15 @@ class AuthService:
 
     @staticmethod
     def exigir_escrita_universidade(universidade_id):
+        """
+        Regra estrita de negocio:
+        O Admin da Camara pode editar os dados de qualquer universidade.
+        A universidade logada so possui permissao de lancamento e edicao
+        para os dados vinculados ao seu proprio identificador institucional.
+        """
         if session.get('perfil') == 'ADMIN_CAMARA':
             return True
-        return session.get('universidade_id') == universidade_id
+        usuario_uni_id = session.get('universidade_id')
+        if not usuario_uni_id or not universidade_id:
+            return False
+        return str(usuario_uni_id).strip().upper() == str(universidade_id).strip().upper()

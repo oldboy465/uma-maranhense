@@ -28,6 +28,14 @@ class Usuario:
     def is_gestor(self):
         return self.perfil == 'GESTOR_INSTITUCIONAL'
 
+    def redefinir_para_padrao(self):
+        """
+        Redefine a credencial para a senha padrao de primeiro acesso (123456)
+        e restabelece a obrigatoriedade de redefinicao no proximo login.
+        """
+        self.definir_senha("123456")
+        self.precisa_trocar_senha = True
+
     @classmethod
     def from_dict(cls, dados):
         if not dados:

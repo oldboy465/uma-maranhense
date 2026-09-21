@@ -7,6 +7,7 @@ from app.repositories.registro_repository import RegistroRepository
 from app.repositories.auditoria_repository import AuditoriaRepository
 from app.services.motor_calculo import MotorCalculo
 from app.services.auditoria_service import AuditoriaService
+from werkzeug.security import generate_password_hash
 
 admin_bp = Blueprint('admin', __name__)
 
@@ -99,6 +100,30 @@ def usuarios():
     usr_repo = UsuarioRepository()
     usuarios_lista = usr_repo.listar_todos()
     return render_template('admin/usuarios.html', usuarios=usuarios_lista)
+
+@admin_bp.route('/usuarios/<int:usuario_id>/resetar-senha', methods=['POST'])
+def resetar_senha_usuario(usuario_id):
+    """
+    Funcao exclusiva do admin: redefine a senha do usuario para '123456'
+    e reativa a flag precisa_trocar_senha = 1 para forcar troca no primeiro login.
+    """
+    usr_repo = UsuarioRepository()
+    usuario = usr_repo.buscar_por_id(usuario_id)
+
+    if not usuario:
+        flash('Usuário não localizado no sistema.', 'danger')
+        return redirect(url_for('admin.usuarios'))
+
+    hash_padrao = generate_password_hash("123456")
+    usr_repo.resetar_senha_para_padrao(usuario_id, hash_padrao)
+
+    AuditoriaService().registrar_evento(
+        'usuarios', 'UPDATE',
+        dados_novos={'acao': 'reset_senha_admin', 'usuario_alvo': usuario.email, 'usuario_id': usuario_id}
+    )
+
+    flash(f'A senha do usuário {usuario.nome} ({usuario.email}) foi resetada para 123456 com redefinição forçada!', 'success')
+    return redirect(url_for('admin.usuarios'))
 
 @admin_bp.route('/indicadores')
 def indicadores():
