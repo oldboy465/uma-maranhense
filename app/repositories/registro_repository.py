@@ -2,6 +2,11 @@ from app.repositories.base_repository import BaseRepository
 from app.models.registro_dado import RegistroDado
 
 class RegistroRepository(BaseRepository):
+    def buscar_por_id(self, registro_id):
+        sql = "SELECT * FROM registro_dados WHERE id = %s LIMIT 1"
+        res = self.executar_consulta_um(sql, (registro_id,))
+        return RegistroDado.from_dict(res) if res else None
+
     def buscar_por_chave(self, universidade_id, indicador_id, ano_referencia):
         sql = """
             SELECT * FROM registro_dados 
@@ -25,10 +30,6 @@ class RegistroRepository(BaseRepository):
         return self.executar_consulta(sql, (universidade_id, ano_referencia))
 
     def listar_serie_historica_indicador(self, universidade_id, indicador_id, anos=(2022, 2023, 2024, 2025)):
-        """
-        Recupera a série temporal de um indicador para uma universidade específica.
-        Retorna dicionário mapeando ano -> valor_numerico.
-        """
         placeholders = ','.join(['%s'] * len(anos))
         sql = f"""
             SELECT ano_referencia, valor_numerico
@@ -44,11 +45,6 @@ class RegistroRepository(BaseRepository):
         return {l['ano_referencia']: l['valor_numerico'] for l in linhas if l.get('valor_numerico') is not None}
 
     def listar_series_comparador(self, universidade_ids, indicador_id, anos=(2022, 2023, 2024, 2025)):
-        """
-        Recupera as séries de múltiplas universidades para o comparador.
-        Aplica estritamente a regra: apenas universidades que tiverem dados no indicador
-        são retornadas. Universidades sem dados são isoladas/omitidas do gráfico.
-        """
         if not universidade_ids:
             return {}
 
@@ -82,6 +78,11 @@ class RegistroRepository(BaseRepository):
         return resultado
 
     def listar_submissoes_pendentes(self):
+        """
+        Lista todas as pendências que demandam ação da Câmara:
+        - ENVIADO: Novos dados aguardando validação por indicador;
+        - SOLICITADO_ALTERACAO: Pedidos de alteração para desbloquear linha de indicador.
+        """
         sql = """
             SELECT r.*, u.sigla as universidade_sigla, u.nome as universidade_nome,
                    i.codigo as indicador_codigo, i.nome as indicador_nome, i.dimensao,
@@ -90,7 +91,7 @@ class RegistroRepository(BaseRepository):
             INNER JOIN universidades u ON r.universidade_id = u.id
             INNER JOIN indicadores i ON r.indicador_id = i.id
             LEFT JOIN usuarios usr ON r.atualizado_por = usr.id
-            WHERE r.status_dado = 'ENVIADO'
+            WHERE r.status_dado IN ('ENVIADO', 'SOLICITADO_ALTERACAO')
             ORDER BY r.atualizado_em ASC
         """
         return self.executar_consulta(sql)
@@ -143,6 +144,49 @@ class RegistroRepository(BaseRepository):
             WHERE id = %s
         """
         return self.executar_comando(sql, (novo_status, parecer, id_registro))
+
+    def solicitar_alteracao_indicador(self, universidade_id, indicador_id, usuario_id=None):
+        """
+        Marca todos os exercícios preenchidos daquele indicador com SOLICITADO_ALTERACAO.
+        """
+        sql = """
+            UPDATE registro_dados
+            SET status_dado = 'SOLICITADO_ALTERACAO',
+                atualizado_por = COALESCE(%s, atualizado_por)
+            WHERE universidade_id = %s 
+              AND indicador_id = %s 
+              AND status_dado IN ('VALIDADO', 'ENVIADO')
+        """
+        return self.executar_comando(sql, (usuario_id, universidade_id, indicador_id))
+
+    def liberar_e_zerar_indicador(self, universidade_id, indicador_id, usuario_id=None):
+        """
+        Aprovada a solicitação pelo admin: zera a linha do indicador e retorna para RASCUNHO editável.
+        """
+        sql = """
+            UPDATE registro_dados
+            SET valor_numerico = NULL,
+                valor_texto = NULL,
+                status_dado = 'RASCUNHO',
+                parecer_devolucao = 'Alteração autorizada pela Câmara. Linha liberada para novo preenchimento.',
+                atualizado_por = COALESCE(%s, atualizado_por)
+            WHERE universidade_id = %s AND indicador_id = %s
+        """
+        return self.executar_comando(sql, (usuario_id, universidade_id, indicador_id))
+
+    def rejeitar_pedido_alteracao(self, universidade_id, indicador_id, parecer=None):
+        """
+        Rejeitado o pedido de alteração pelo admin: o indicador volta a ser VALIDADO com parecer explicativo.
+        """
+        sql = """
+            UPDATE registro_dados
+            SET status_dado = 'VALIDADO',
+                parecer_devolucao = %s
+            WHERE universidade_id = %s 
+              AND indicador_id = %s 
+              AND status_dado = 'SOLICITADO_ALTERACAO'
+        """
+        return self.executar_comando(sql, (parecer or 'Pedido de alteração indeferido.', universidade_id, indicador_id))
 
     def listar_para_painel_publico(self, indicador_id, anos):
         if not anos:

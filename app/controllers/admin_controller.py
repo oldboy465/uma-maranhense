@@ -51,7 +51,6 @@ def editar_universidade(id):
         universidade.regiao = request.form.get('regiao', universidade.regiao).strip()
         universidade.municipio_sede = request.form.get('municipio_sede', universidade.municipio_sede).strip()
         
-        # Campo de Autonomia Financeira (1 = Sim, 0 = Não)
         autonomia_raw = request.form.get('autonomia_financeira', '0')
         universidade.autonomia_financeira = 1 if autonomia_raw in ('1', 1, 'on', True) else 0
 
@@ -76,23 +75,57 @@ def submissoes():
 
 @admin_bp.route('/submissoes/<int:registro_id>/decisao', methods=['POST'])
 def decidir_submissao(registro_id):
+    """
+    Decisão independente por indicador:
+    - Se for validação de novo lançamento (ENVIADO): VALIDAR aprova e homologa; DEVOLVER rejeita individualmente.
+    - Se for solicitação de alteração (SOLICITADO_ALTERACAO):
+        * APROVAR_ALTERACAO: Zera a linha do indicador na IES e a reabre como RASCUNHO editável.
+        * RECUSAR_ALTERACAO: Mantém o valor anterior intacto e o reclassifica como VALIDADO.
+    """
     decisao = request.form.get('decisao')
     parecer = request.form.get('parecer', '').strip()
 
-    if decisao == 'DEVOLVER' and not parecer:
-        flash('Para devolver uma submissão, o parecer analítico é obrigatório.', 'warning')
+    reg_repo = RegistroRepository()
+    registro = reg_repo.buscar_por_id(registro_id)
+
+    if not registro:
+        flash('Registro não localizado na base de dados.', 'danger')
         return redirect(url_for('admin.submissoes'))
 
-    novo_status = 'VALIDADO' if decisao == 'VALIDAR' else 'DEVOLVER'
-    reg_repo = RegistroRepository()
-    reg_repo.atualizar_status(registro_id, novo_status, parecer if novo_status == 'DEVOLVER' else None)
+    # Caso 1: Tratamento de Solicitação de Alteração de Indicador
+    if registro.status_dado == 'SOLICITADO_ALTERACAO':
+        if decisao == 'APROVAR_ALTERACAO':
+            reg_repo.liberar_e_zerar_indicador(registro.universidade_id, registro.indicador_id)
+            MotorCalculo().calcular_indicadores_derivados(registro.universidade_id, registro.ano_referencia)
+            AuditoriaService().registrar_evento('registro_dados', 'ALTERACAO_AUTORIZADA',
+                                                dados_novos={'indicador_id': registro.indicador_id, 'universidade_id': registro.universidade_id})
+            flash('Solicitação de alteração aceita. A linha do indicador foi zerada e reaberta para preenchimento da universidade!', 'success')
+        else:
+            reg_repo.rejeitar_pedido_alteracao(registro.universidade_id, registro.indicador_id, parecer=parecer)
+            AuditoriaService().registrar_evento('registro_dados', 'ALTERACAO_RECUSADA',
+                                                dados_novos={'indicador_id': registro.indicador_id, 'parecer': parecer})
+            flash('Solicitação de alteração recusada. Os dados anteriores foram preservados.', 'warning')
 
-    registro = reg_repo.executar_consulta_um("SELECT * FROM registro_dados WHERE id = %s", (registro_id,))
-    if registro and novo_status == 'VALIDADO':
-        MotorCalculo().calcular_indicadores_derivados(registro['universidade_id'], registro['ano_referencia'])
+        return redirect(url_for('admin.submissoes'))
 
-    AuditoriaService().registrar_evento('registro_dados', 'VALIDACAO', dados_novos={'id': registro_id, 'status': novo_status})
-    flash(f'Registro {novo_status.lower()} com sucesso!', 'success')
+    # Caso 2: Validação ou Rejeição de Lançamento Direto (ENVIADO)
+    if decisao == 'DEVOLVER' and not parecer:
+        flash('Para rejeitar ou devolver um indicador, o parecer analítico é obrigatório.', 'warning')
+        return redirect(url_for('admin.submissoes'))
+
+    if decisao == 'VALIDAR':
+        novo_status = 'VALIDADO'
+        reg_repo.atualizar_status(registro_id, novo_status, parecer=None)
+        MotorCalculo().calcular_indicadores_derivados(registro.universidade_id, registro.ano_referencia)
+        flash('Indicador validado com sucesso! Já está refletido nos cálculos públicos.', 'success')
+    else:
+        novo_status = 'DEVOLVIDO'
+        reg_repo.atualizar_status(registro_id, novo_status, parecer=parecer)
+        flash('Indicador devolvido para correção da universidade. Os demais indicadores não foram afetados.', 'warning')
+
+    AuditoriaService().registrar_evento('registro_dados', 'VALIDACAO',
+                                        dados_novos={'id': registro_id, 'indicador_id': registro.indicador_id, 'status': novo_status, 'parecer': parecer})
+
     return redirect(url_for('admin.submissoes'))
 
 @admin_bp.route('/usuarios')
@@ -103,10 +136,6 @@ def usuarios():
 
 @admin_bp.route('/usuarios/<int:usuario_id>/resetar-senha', methods=['POST'])
 def resetar_senha_usuario(usuario_id):
-    """
-    Funcao exclusiva do admin: redefine a senha do usuario para '123456'
-    e reativa a flag precisa_trocar_senha = 1 para forcar troca no primeiro login.
-    """
     usr_repo = UsuarioRepository()
     usuario = usr_repo.buscar_por_id(usuario_id)
 

@@ -1,3 +1,4 @@
+import re
 from flask import Blueprint, render_template, request, redirect, url_for, flash, session, abort
 from app.services.auth_service import AuthService
 from app.repositories.universidade_repository import UniversidadeRepository
@@ -8,6 +9,33 @@ from app.services.motor_calculo import MotorCalculo
 from app.services.auditoria_service import AuditoriaService
 
 minha_universidade_bp = Blueprint('minha_universidade', __name__)
+
+def sanitizar_valor_brasileiro(valor_str):
+    """
+    Higieniza estritamente os campos:
+    - Não permite letras, espaços, pontos ou caracteres especiais.
+    - Permite somente números e no máximo uma única vírgula.
+    - Retorna float ou None se vazio. Levanta ValueError se formato for violado.
+    """
+    if valor_str is None:
+        return None
+    
+    val = str(valor_str).strip()
+    if val == '' or val == '-':
+        return None
+
+    # Rejeita imediatamente se contiver letras, espaços ou pontos
+    if re.search(r'[^0-9,]', val):
+        raise ValueError("Inserção inválida: não são permitidos letras, espaços ou pontos. Use apenas números e vírgula.")
+
+    # Permite no máximo uma vírgula
+    if val.count(',') > 1:
+        raise ValueError("Inserção inválida: permitido no máximo uma vírgula decimal.")
+
+    # Converte vírgula para ponto decimal para persistência float
+    val_normalizado = val.replace(',', '.')
+    return round(float(val_normalizado), 2)
+
 
 @minha_universidade_bp.route('/')
 def painel():
@@ -22,7 +50,6 @@ def painel():
     is_admin = (usuario.get('perfil') == 'ADMIN_CAMARA')
     universidades_disponiveis = uni_repo.listar_todas(apenas_ativas=True) if is_admin else []
 
-    # Se for admin, permite transitar entre instituicoes. Se for universidade, bloqueia no proprio ID
     if is_admin:
         default_uni = usuario.get('universidade_id') or (universidades_disponiveis[0].id if universidades_disponiveis else 'U31')
         uni_id = request.args.get('universidade_id', default_uni)
@@ -41,24 +68,29 @@ def painel():
     exercicio_referencia = int(request.args.get('ano', 2025))
     anos_ciclo = [2022, 2023, 2024, 2025]
 
-    # Indicadores do Núcleo Essencial (Digitáveis) e Calculados
     todos_indicadores = ind_repo.listar_todos(apenas_ativos=True)
     indicadores_digitaveis = [i for i in todos_indicadores if not i.is_calculado()]
     indicadores_calculados = [i for i in todos_indicadores if i.is_calculado()]
 
-    # Mapeamento de registros por indicador e ano: matriz[indicador_id][ano] -> RegistroDado
     matriz_registros = {}
     total_validados = 0
     total_aguardando = 0
     total_rascunhos = 0
     total_devolvidos = 0
+    total_solicitados_alteracao = 0
+
+    # Dicionário auxiliar para controlar se a linha inteira pode solicitar alteração
+    linha_status_map = {}
 
     for ind in todos_indicadores:
         matriz_registros[ind.id] = {}
+        status_linha_set = set()
+
         for a in anos_ciclo:
             reg = reg_repo.buscar_por_chave(uni_id, ind.id, a)
             matriz_registros[ind.id][a] = reg
             if reg and reg.valor_numerico is not None:
+                status_linha_set.add(reg.status_dado)
                 if reg.status_dado == 'VALIDADO':
                     total_validados += 1
                 elif reg.status_dado == 'ENVIADO':
@@ -67,6 +99,20 @@ def painel():
                     total_rascunhos += 1
                 elif reg.status_dado == 'DEVOLVIDO':
                     total_devolvidos += 1
+                elif reg.status_dado == 'SOLICITADO_ALTERACAO':
+                    total_solicitados_alteracao += 1
+
+        # Uma linha é considerada em solicitação de alteração se ao menos uma de suas células estiver assim
+        if 'SOLICITADO_ALTERACAO' in status_linha_set:
+            linha_status_map[ind.id] = 'SOLICITADO_ALTERACAO'
+        elif 'ENVIADO' in status_linha_set:
+            linha_status_map[ind.id] = 'ENVIADO'
+        elif 'VALIDADO' in status_linha_set:
+            linha_status_map[ind.id] = 'VALIDADO'
+        elif 'DEVOLVIDO' in status_linha_set:
+            linha_status_map[ind.id] = 'DEVOLVIDO'
+        else:
+            linha_status_map[ind.id] = 'RASCUNHO'
 
     responsaveis = uni_repo.listar_responsaveis(uni_id)
 
@@ -77,99 +123,46 @@ def painel():
                            indicadores_digitaveis=indicadores_digitaveis,
                            indicadores_calculados=indicadores_calculados,
                            matriz=matriz_registros,
+                           linha_status_map=linha_status_map,
                            total_validados=total_validados,
                            total_aguardando=total_aguardando,
                            total_rascunhos=total_rascunhos,
                            total_devolvidos=total_devolvidos,
+                           total_solicitados_alteracao=total_solicitados_alteracao,
                            responsaveis=responsaveis,
                            is_admin=is_admin,
                            universidades_disponiveis=universidades_disponiveis)
 
-@minha_universidade_bp.route('/salvar-serie', methods=['POST'])
-def salvar_serie():
-    """
-    Preenche uma série de uma vez (2022 a 2025) para um único indicador.
-    Valida estritamente a permissao de escrita da universidade logada.
-    """
-    if not AuthService.esta_autenticado():
-        return redirect(url_for('auth.login'))
-
-    uni_id = request.form.get('universidade_id')
-    if not AuthService.exigir_escrita_universidade(uni_id):
-        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_escrita_serie', 'alvo': uni_id})
-        abort(403)
-
-    ind_id = request.form.get('indicador_id')
-    obs = request.form.get('observacao', '').strip()
-    anos = [2022, 2023, 2024, 2025]
-
-    reg_repo = RegistroRepository()
-    ind_repo = IndicadorRepository()
-    indicador = ind_repo.buscar_por_id(ind_id)
-
-    if indicador and indicador.is_calculado():
-        flash('Indicadores derivados não aceitam gravação direta de série.', 'warning')
-        return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))
-
-    gravados = 0
-    for a in anos:
-        val_raw = request.form.get(f'valor_{a}', '').strip()
-        if val_raw != '':
-            try:
-                limpo = val_raw.replace('R$', '').replace('.', '').replace(',', '.').strip()
-                val_num = round(float(limpo), 2)
-            except ValueError:
-                continue
-
-            reg = RegistroDado(
-                universidade_id=uni_id,
-                indicador_id=ind_id,
-                ano_referencia=a,
-                valor_numerico=val_num,
-                status_dado='RASCUNHO',
-                fonte_descricao=obs or 'Série declarada pela instituição',
-                atualizado_por=session.get('usuario_id')
-            )
-            reg_repo.salvar(reg)
-            gravados += 1
-            MotorCalculo().calcular_indicadores_derivados(uni_id, a, usuario_id=session.get('usuario_id'))
-
-    AuditoriaService().registrar_evento(
-        'registro_dados', 'UPDATE',
-        dados_novos={'acao': 'preencher_serie', 'indicador': ind_id, 'gravados': gravados},
-        universidade_id=uni_id
-    )
-
-    flash(f'Série do indicador gravada como rascunho ({gravados} exercícios atualizados).', 'success')
-    return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))
 
 @minha_universidade_bp.route('/salvar-celula', methods=['POST'])
 def salvar_celula():
     """
-    Gravação rápida de célula avulsa com salvamento em rascunho.
-    Valida estritamente a permissao de escrita da universidade logada.
+    Gravação rápida assíncrona ao mudar valor da célula.
+    Garante sanitização estrita e bloqueio em células não-editáveis.
     """
     if not AuthService.esta_autenticado():
         return {'erro': 'Não autenticado'}, 401
 
     uni_id = request.form.get('universidade_id')
     if not AuthService.exigir_escrita_universidade(uni_id):
-        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_escrita_celula', 'alvo': uni_id})
         return {'erro': 'Acesso não autorizado para esta universidade'}, 403
 
     ind_id = request.form.get('indicador_id')
     ano = int(request.form.get('ano_referencia'))
-    valor_raw = request.form.get('valor', '').strip()
-
-    val_num = None
-    if valor_raw != '':
-        try:
-            limpo = valor_raw.replace('R$', '').replace('.', '').replace(',', '.').strip()
-            val_num = round(float(limpo), 2)
-        except ValueError:
-            return {'erro': 'Formato numérico inválido'}, 400
+    valor_raw = request.form.get('valor', '')
 
     reg_repo = RegistroRepository()
+    reg_existente = reg_repo.buscar_por_chave(uni_id, ind_id, ano)
+
+    # Impede edição de campos bloqueados (ENVIADO, VALIDADO ou SOLICITADO_ALTERACAO)
+    if reg_existente and not reg_existente.is_editavel_por_gestor() and not AuthService.exigir_admin():
+        return {'erro': 'Campo bloqueado para alteração direta.'}, 400
+
+    try:
+        val_num = sanitizar_valor_brasileiro(valor_raw)
+    except ValueError as e:
+        return {'erro': str(e)}, 400
+
     reg = RegistroDado(
         universidade_id=uni_id,
         indicador_id=ind_id,
@@ -183,32 +176,69 @@ def salvar_celula():
 
     return {'sucesso': True, 'valor': val_num}
 
-@minha_universidade_bp.route('/enviar-lote', methods=['POST'])
-def enviar_lote():
+
+@minha_universidade_bp.route('/enviar-validacao', methods=['POST'])
+def enviar_validacao():
     """
-    Submete os rascunhos para a fila de homologacao formal da Camara.
+    Submete todos os campos em RASCUNHO/DEVOLVIDO da tabela direta para validação da Câmara.
+    Após submissão, os campos ficam bloqueados em modo visualização.
     """
     if not AuthService.esta_autenticado():
         return redirect(url_for('auth.login'))
 
     uni_id = request.form.get('universidade_id')
     if not AuthService.exigir_escrita_universidade(uni_id):
-        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_envio_lote', 'alvo': uni_id})
+        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_envio_validacao', 'alvo': uni_id})
         abort(403)
 
     reg_repo = RegistroRepository()
     sql = """
         UPDATE registro_dados 
         SET status_dado = 'ENVIADO' 
-        WHERE universidade_id = %s AND status_dado IN ('RASCUNHO', 'DEVOLVIDO')
+        WHERE universidade_id = %s 
+          AND status_dado IN ('RASCUNHO', 'DEVOLVIDO')
+          AND valor_numerico IS NOT NULL
     """
     afetados = reg_repo.executar_comando(sql, (uni_id,))
 
     AuditoriaService().registrar_evento(
-        'registro_dados', 'UPDATE',
-        dados_novos={'acao': 'enviar_lote_validacao', 'total': afetados},
+        'registro_dados', 'SUBMISSAO',
+        dados_novos={'acao': 'enviar_para_validacao', 'registros_submetidos': afetados},
         universidade_id=uni_id
     )
 
-    flash(f'{afetados} registro(s) enviados com sucesso para a validação da Câmara!', 'success')
+    if afetados > 0:
+        flash(f'{afetados} indicador(es) enviados para validação do Admin! Os campos agora estão bloqueados para edição.', 'success')
+    else:
+        flash('Nenhum dado novo ou pendente de envio encontrado para submissão.', 'info')
+
+    return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))
+
+
+@minha_universidade_bp.route('/solicitar-alteracao', methods=['POST'])
+def solicitar_alteracao():
+    """
+    Envia pedido formal ao Admin para alteração de um indicador específico.
+    Bloqueia o indicador até decisão da Câmara.
+    """
+    if not AuthService.esta_autenticado():
+        return redirect(url_for('auth.login'))
+
+    uni_id = request.form.get('universidade_id')
+    ind_id = request.form.get('indicador_id')
+
+    if not AuthService.exigir_escrita_universidade(uni_id):
+        AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_solicitar_alteracao', 'alvo': uni_id})
+        abort(403)
+
+    reg_repo = RegistroRepository()
+    afetados = reg_repo.solicitar_alteracao_indicador(uni_id, ind_id, usuario_id=session.get('usuario_id'))
+
+    AuditoriaService().registrar_evento(
+        'registro_dados', 'SOLICITACAO_ALTERACAO',
+        dados_novos={'indicador_id': ind_id, 'universidade_id': uni_id, 'registros_afetados': afetados},
+        universidade_id=uni_id
+    )
+
+    flash('Solicitação de alteração enviada para a validação do Admin. A linha permanecerá bloqueada até análise da Câmara.', 'info')
     return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))

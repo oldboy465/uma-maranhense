@@ -10,7 +10,8 @@ class RegistroDado:
         self.ano_referencia = int(ano_referencia) if ano_referencia is not None else None
         self.valor_numerico = float(valor_numerico) if valor_numerico is not None else None
         self.valor_texto = valor_texto
-        self.status_dado = status_dado  # RASCUNHO, ENVIADO, VALIDADO, DEVOLVIDO
+        # Status permitidos: RASCUNHO, ENVIADO, VALIDADO, DEVOLVIDO, SOLICITADO_ALTERACAO
+        self.status_dado = status_dado or 'RASCUNHO'
         self.fonte_tipo = fonte_tipo
         self.fonte_descricao = fonte_descricao
         self.fonte_url = fonte_url
@@ -23,7 +24,12 @@ class RegistroDado:
         return self.status_dado == 'VALIDADO'
 
     def is_editavel_por_gestor(self):
+        # Campos só são editáveis se estiverem em rascunho ou devolvidos para correção
         return self.status_dado in ('RASCUNHO', 'DEVOLVIDO')
+
+    def permite_solicitar_alteracao(self):
+        # Apenas indicadores validados ou enviados podem receber pedido formal de alteração
+        return self.status_dado in ('VALIDADO', 'ENVIADO')
 
     @property
     def valor_formatado_br(self):

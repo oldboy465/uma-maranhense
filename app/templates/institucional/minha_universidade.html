@@ -8,7 +8,7 @@
         <div>
             <span class="text-xs font-bold uppercase tracking-wider text-abruem-600 block mb-1">ÁREA INSTITUCIONAL</span>
             <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Central de Atualização {{ universidade.sigla }}</h1>
-            <p class="text-sm text-slate-500 mt-1">Informe apenas os dados primários essenciais da instituição. O restante a plataforma calcula.</p>
+            <p class="text-sm text-slate-500 mt-1">Preencha os indicadores diretamente na tabela abaixo. Após o envio para validação, os campos são bloqueados.</p>
         </div>
 
         <!-- Seletor de Universidade visível EXCLUSIVAMENTE para ADMIN_CAMARA -->
@@ -35,85 +35,40 @@
 <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
     <div class="md:col-span-2 bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
         <span class="text-[10px] font-bold uppercase tracking-wider text-abruem-600 bg-abruem-50 px-2 py-0.5 rounded border border-abruem-100">Ciclo aberto</span>
-        <h2 class="text-base font-bold text-slate-900 mt-2">Campanha 2026 — Núcleo Essencial</h2>
+        <h2 class="text-base font-bold text-slate-900 mt-2">Campanha de Coleta Institucional</h2>
         <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            Coleta institucional das universidades filiadas. Nenhum indicador derivado é solicitado: a plataforma os calcula a partir do que a instituição informar.
+            Preencha os indicadores de uma só vez na grade abaixo. Números decimais devem utilizar apenas vírgula (sem letras, espaços ou pontos).
         </p>
     </div>
     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
-        <span class="text-xs font-semibold text-slate-400 block">Validados pela Câmara</span>
+        <span class="text-xs font-semibold text-slate-400 block">Validados</span>
         <div class="text-3xl font-extrabold text-emerald-600 my-1">{{ total_validados }}</div>
-        <span class="text-[11px] text-slate-400">Alimentam os painéis da rede</span>
+        <span class="text-[11px] text-slate-400">Homologados pela Câmara</span>
     </div>
     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
         <span class="text-xs font-semibold text-slate-400 block">Aguardando validação</span>
         <div class="text-3xl font-extrabold text-amber-600 my-1">{{ total_aguardando }}</div>
-        <span class="text-[11px] text-slate-400">Em análise pela Câmara</span>
+        <span class="text-[11px] text-slate-400">Bloqueados para edição</span>
     </div>
     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
-        <span class="text-xs font-semibold text-slate-400 block">Em rascunho</span>
+        <span class="text-xs font-semibold text-slate-400 block">Em rascunho / liberados</span>
         <div class="text-3xl font-extrabold text-slate-900 my-1">{{ total_rascunhos }}</div>
-        <span class="text-[11px] text-slate-400">Ainda não enviados</span>
+        <span class="text-[11px] text-slate-400">Editáveis na tabela</span>
     </div>
 </div>
 
-<!-- Bloco: Preencher uma Série de uma Vez (Sem filtro de fonte) -->
-<div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm mb-10">
-    <div class="border-b border-slate-100 pb-3 mb-5">
-        <h3 class="text-base font-bold text-slate-900">Preencher uma série de uma vez</h3>
-        <p class="text-xs text-slate-500 mt-0.5">Informe os valores para múltiplos exercícios de uma única vez para <strong>{{ universidade.sigla }}</strong>.</p>
-    </div>
-
-    <form method="POST" action="{{ url_for('minha_universidade.salvar_serie') }}" class="space-y-5">
-        <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-
-        <div>
-            <label for="indicador_id" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Indicador:</label>
-            <select name="indicador_id" id="indicador_id" required 
-                    class="w-full max-w-md rounded-lg border-slate-300 text-sm font-semibold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
-                {% for ind in indicadores_digitaveis %}
-                    <option value="{{ ind.id }}">{{ ind.nome }}</option>
-                {% endfor %}
-            </select>
-        </div>
-
-        <div>
-            <span class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">Valores por exercício (número):</span>
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-2xl">
-                {% for a in anos_ciclo %}
-                <div>
-                    <label for="val_{{ a }}" class="block text-xs font-semibold text-slate-500 mb-1">{{ a }}</label>
-                    <input type="text" name="valor_{{ a }}" id="val_{{ a }}" placeholder="-" 
-                           class="input-valor w-full rounded-lg border-slate-300 text-sm font-bold text-slate-900 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-2 px-3">
-                </div>
-                {% endfor %}
-            </div>
-            <p class="text-[11px] text-slate-400 mt-2">Deixe em branco o exercício que a instituição não informa — em branco significa ausência.</p>
-        </div>
-
-        <div>
-            <label for="observacao" class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">Observação metodológica (opcional):</label>
-            <textarea name="observacao" id="observacao" rows="2" placeholder="Recorte adotado, componentes somados, data de corte..." 
-                      class="w-full max-w-2xl rounded-lg border-slate-300 text-xs text-slate-800 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 p-2.5"></textarea>
-        </div>
-
-        <button type="submit" class="px-5 py-2.5 bg-abruem-800 text-white rounded-lg text-xs font-bold hover:bg-abruem-900 shadow-sm transition">
-            Salvar série
-        </button>
-    </form>
-</div>
-
-<!-- Bloco: O que este ciclo pede (Grid de Edição Direta por Célula) -->
+<!-- Bloco: Grade de Lançamento Direto com Validação e Solicitação de Alteração -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-10">
     <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-            <h3 class="text-base font-bold text-slate-900">O que este ciclo pede</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Digite direto na célula: o valor é salvo sozinho como rascunho. Enter desce para o próximo indicador, Tab anda pelos exercícios.</p>
+            <h3 class="text-base font-bold text-slate-900">Lançamento Direto de Indicadores</h3>
+            <p class="text-xs text-slate-500 mt-0.5">Preencha diretamente nas células. Digitação protegida: somente números e vírgula permitidos.</p>
         </div>
-        <form method="POST" action="{{ url_for('minha_universidade.enviar_lote') }}">
+        <form method="POST" action="{{ url_for('minha_universidade.enviar_validacao') }}">
             <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-            <button type="submit" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-sm transition">
-                Enviar {{ total_rascunhos }} registro(s) para validação
+            <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Enviar para Validação ({{ total_rascunhos }})
             </button>
         </form>
     </div>
@@ -124,31 +79,85 @@
                 <tr>
                     <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
                     {% for a in anos_ciclo %}
-                        <th scope="col" class="px-4 py-3.5 text-center w-1/6 font-bold text-slate-800">{{ a }}</th>
+                        <th scope="col" class="px-4 py-3.5 text-center w-28 font-bold text-slate-800">{{ a }}</th>
                     {% endfor %}
+                    <th scope="col" class="px-6 py-3.5 text-center w-48">Status / Ação</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
                 {% for ind in indicadores_digitaveis %}
+                {% set status_da_linha = linha_status_map.get(ind.id, 'RASCUNHO') %}
                 <tr class="hover:bg-slate-50/80 transition-colors">
                     <td class="px-6 py-3.5">
                         <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
-                        <span class="text-[11px] font-mono text-slate-400 block">{{ ind.codigo }} · obrigatório</span>
+                        <span class="text-[11px] font-mono text-slate-400 block">{{ ind.codigo }} · {{ ind.unidade_medida or 'número' }}</span>
                     </td>
+
                     {% for a in anos_ciclo %}
                     {% set reg = matriz[ind.id][a] %}
+                    {% set esta_bloqueado = (reg and reg.status_dado in ['ENVIADO', 'VALIDADO', 'SOLICITADO_ALTERACAO'] and not is_admin) %}
                     <td class="px-4 py-3.5 text-center">
                         <input type="text" 
                                data-uni="{{ universidade.id }}" 
                                data-ind="{{ ind.id }}" 
                                data-ano="{{ a }}"
-                               value="{% if reg and reg.valor_numerico is not none %}{{ reg.valor_numerico | numero_br(0) }}{% endif %}"
+                               value="{% if reg and reg.valor_numerico is not none %}{{ (reg.valor_numerico | string).replace('.', ',') }}{% endif %}"
                                placeholder="-"
-                               {% if reg and reg.status_dado in ['ENVIADO', 'VALIDADO'] and not is_admin %}disabled{% endif %}
-                               class="celula-rapida w-24 text-center py-1 px-2 border rounded text-xs font-bold text-slate-900 focus:border-abruem-500 focus:ring-1 focus:ring-abruem-500 
-                               {% if reg and reg.status_dado == 'VALIDADO' %}bg-emerald-50/50 border-emerald-300 text-emerald-800{% elif reg and reg.status_dado == 'ENVIADO' %}bg-amber-50/50 border-amber-300{% else %}border-slate-300 bg-white{% endif %}">
+                               inputmode="decimal"
+                               autocomplete="off"
+                               {% if esta_bloqueado %}disabled readonly title="Campo bloqueado para edição direta"{% endif %}
+                               class="celula-rapida w-24 text-center py-1.5 px-2 border rounded text-xs font-bold transition
+                               {% if esta_bloqueado %}
+                                   bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed
+                               {% elif reg and reg.status_dado == 'DEVOLVIDO' %}
+                                   bg-rose-50 border-rose-300 text-rose-900
+                               {% else %}
+                                   border-slate-300 bg-white text-slate-900 focus:border-abruem-500 focus:ring-1 focus:ring-abruem-500
+                               {% endif %}">
                     </td>
                     {% endfor %}
+
+                    <td class="px-6 py-3.5 text-center">
+                        {% if status_da_linha == 'VALIDADO' %}
+                            <div class="flex flex-col items-center gap-1.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    Validado
+                                </span>
+                                <form method="POST" action="{{ url_for('minha_universidade.solicitar_alteracao') }}" onsubmit="return confirm('Deseja solicitar autorização ao Admin para alterar este indicador? Os campos serão mantidos até a aprovação da Câmara.');">
+                                    <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+                                    <input type="hidden" name="indicador_id" value="{{ ind.id }}">
+                                    <button type="submit" class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 transition">
+                                        Solicitar Alteração
+                                    </button>
+                                </form>
+                            </div>
+                        {% elif status_da_linha == 'ENVIADO' %}
+                            <div class="flex flex-col items-center gap-1.5">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    Em Validação
+                                </span>
+                                <span class="text-[10px] text-slate-400">Aguardando Admin</span>
+                            </div>
+                        {% elif status_da_linha == 'SOLICITADO_ALTERACAO' %}
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                    Alteração Solicitada
+                                </span>
+                                <span class="text-[10px] text-purple-600 font-medium">Aguardando liberação</span>
+                            </div>
+                        {% elif status_da_linha == 'DEVOLVIDO' %}
+                            <div class="flex flex-col items-center gap-1">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                    Recusado / Devolvido
+                                </span>
+                                <span class="text-[10px] text-rose-600">Corrija e reenvie</span>
+                            </div>
+                        {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
+                                Editável (Rascunho)
+                            </span>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -169,7 +178,7 @@
                 <tr>
                     <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
                     {% for a in anos_ciclo %}
-                        <th scope="col" class="px-4 py-3.5 text-center w-1/6 font-bold text-slate-800">{{ a }}</th>
+                        <th scope="col" class="px-4 py-3.5 text-center w-28 font-bold text-slate-800">{{ a }}</th>
                     {% endfor %}
                 </tr>
             </thead>
