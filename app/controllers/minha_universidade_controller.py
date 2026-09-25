@@ -32,7 +32,7 @@ def sanitizar_valor_brasileiro(valor_str):
     if val.count(',') > 1:
         raise ValueError("Inserção inválida: permitido no máximo uma vírgula decimal.")
 
-    # Converte vírgula para ponto decimal para persistência float
+    # Converte vírgula para ponto decimal para persistência numérica
     val_normalizado = val.replace(',', '.')
     return round(float(val_normalizado), 2)
 
@@ -79,38 +79,44 @@ def painel():
     total_devolvidos = 0
     total_solicitados_alteracao = 0
 
-    # Dicionário auxiliar para controlar se a linha inteira pode solicitar alteração
     linha_status_map = {}
+    linha_pareceres_map = {}
 
     for ind in todos_indicadores:
         matriz_registros[ind.id] = {}
         status_linha_set = set()
+        pareceres_linha = []
 
         for a in anos_ciclo:
             reg = reg_repo.buscar_por_chave(uni_id, ind.id, a)
             matriz_registros[ind.id][a] = reg
-            if reg and reg.valor_numerico is not None:
-                status_linha_set.add(reg.status_dado)
-                if reg.status_dado == 'VALIDADO':
-                    total_validados += 1
-                elif reg.status_dado == 'ENVIADO':
-                    total_aguardando += 1
-                elif reg.status_dado == 'RASCUNHO':
-                    total_rascunhos += 1
-                elif reg.status_dado == 'DEVOLVIDO':
-                    total_devolvidos += 1
-                elif reg.status_dado == 'SOLICITADO_ALTERACAO':
-                    total_solicitados_alteracao += 1
+            if reg:
+                if reg.parecer_devolucao:
+                    pareceres_linha.append(f"{a}: {reg.parecer_devolucao}")
 
-        # Uma linha é considerada em solicitação de alteração se ao menos uma de suas células estiver assim
+                if reg.valor_numerico is not None:
+                    status_linha_set.add(reg.status_dado)
+                    if reg.status_dado == 'VALIDADO':
+                        total_validados += 1
+                    elif reg.status_dado == 'ENVIADO':
+                        total_aguardando += 1
+                    elif reg.status_dado == 'RASCUNHO':
+                        total_rascunhos += 1
+                    elif reg.status_dado == 'DEVOLVIDO':
+                        total_devolvidos += 1
+                    elif reg.status_dado == 'SOLICITADO_ALTERACAO':
+                        total_solicitados_alteracao += 1
+
+        linha_pareceres_map[ind.id] = " | ".join(pareceres_linha) if pareceres_linha else None
+
         if 'SOLICITADO_ALTERACAO' in status_linha_set:
             linha_status_map[ind.id] = 'SOLICITADO_ALTERACAO'
         elif 'ENVIADO' in status_linha_set:
             linha_status_map[ind.id] = 'ENVIADO'
-        elif 'VALIDADO' in status_linha_set:
-            linha_status_map[ind.id] = 'VALIDADO'
         elif 'DEVOLVIDO' in status_linha_set:
             linha_status_map[ind.id] = 'DEVOLVIDO'
+        elif 'VALIDADO' in status_linha_set:
+            linha_status_map[ind.id] = 'VALIDADO'
         else:
             linha_status_map[ind.id] = 'RASCUNHO'
 
@@ -124,6 +130,7 @@ def painel():
                            indicadores_calculados=indicadores_calculados,
                            matriz=matriz_registros,
                            linha_status_map=linha_status_map,
+                           linha_pareceres_map=linha_pareceres_map,
                            total_validados=total_validados,
                            total_aguardando=total_aguardando,
                            total_rascunhos=total_rascunhos,
@@ -154,7 +161,6 @@ def salvar_celula():
     reg_repo = RegistroRepository()
     reg_existente = reg_repo.buscar_por_chave(uni_id, ind_id, ano)
 
-    # Impede edição de campos bloqueados (ENVIADO, VALIDADO ou SOLICITADO_ALTERACAO)
     if reg_existente and not reg_existente.is_editavel_por_gestor() and not AuthService.exigir_admin():
         return {'erro': 'Campo bloqueado para alteração direta.'}, 400
 
@@ -180,8 +186,9 @@ def salvar_celula():
 @minha_universidade_bp.route('/enviar-validacao', methods=['POST'])
 def enviar_validacao():
     """
-    Submete todos os campos em RASCUNHO/DEVOLVIDO da tabela direta para validação da Câmara.
-    Após submissão, os campos ficam bloqueados em modo visualização.
+    Submete a grade completa para validação.
+    Captura todos os campos enviados via POST pela tabela, persistindo e
+    marcando com status ENVIADO todos os indicadores com dados informados.
     """
     if not AuthService.esta_autenticado():
         return redirect(url_for('auth.login'))
@@ -191,26 +198,66 @@ def enviar_validacao():
         AuditoriaService().registrar_evento('seguranca', 'ACESSO_NEGADO', dados_novos={'acao': 'tentativa_envio_validacao', 'alvo': uni_id})
         abort(403)
 
+    ind_repo = IndicadorRepository()
     reg_repo = RegistroRepository()
-    sql = """
+
+    indicadores_digitaveis = [i for i in ind_repo.listar_todos(apenas_ativos=True) if not i.is_calculado()]
+    anos_ciclo = [2022, 2023, 2024, 2025]
+    total_enviados = 0
+
+    # 1. Processa todos os inputs enviados diretamente pelo formulário
+    for ind in indicadores_digitaveis:
+        for ano in anos_ciclo:
+            campo_nome = f"valor_{ind.id}_{ano}"
+            if campo_nome in request.form:
+                valor_raw = request.form.get(campo_nome, '')
+                reg_existente = reg_repo.buscar_por_chave(uni_id, ind.id, ano)
+
+                # Se o campo já estava validado e não pode ser editado diretamente, ignora
+                if reg_existente and reg_existente.status_dado in ['VALIDADO', 'ENVIADO', 'SOLICITADO_ALTERACAO'] and not AuthService.exigir_admin():
+                    continue
+
+                try:
+                    val_num = sanitizar_valor_brasileiro(valor_raw)
+                except ValueError:
+                    continue
+
+                if val_num is not None:
+                    reg = RegistroDado(
+                        universidade_id=uni_id,
+                        indicador_id=ind.id,
+                        ano_referencia=ano,
+                        valor_numerico=val_num,
+                        status_dado='ENVIADO',
+                        atualizado_por=session.get('usuario_id')
+                    )
+                    reg_repo.salvar(reg)
+                    total_enviados += 1
+                elif reg_existente and reg_existente.valor_numerico is not None and reg_existente.status_dado in ['RASCUNHO', 'DEVOLVIDO']:
+                    reg_repo.atualizar_status(reg_existente.id, 'ENVIADO')
+                    total_enviados += 1
+
+    # 2. Garante que qualquer outro rascunho preenchido anteriormente passe para ENVIADO
+    sql_backup = """
         UPDATE registro_dados 
         SET status_dado = 'ENVIADO' 
         WHERE universidade_id = %s 
           AND status_dado IN ('RASCUNHO', 'DEVOLVIDO')
           AND valor_numerico IS NOT NULL
     """
-    afetados = reg_repo.executar_comando(sql, (uni_id,))
+    extras = reg_repo.executar_comando(sql_backup, (uni_id,))
+    total_enviados += extras
 
     AuditoriaService().registrar_evento(
         'registro_dados', 'SUBMISSAO',
-        dados_novos={'acao': 'enviar_para_validacao', 'registros_submetidos': afetados},
+        dados_novos={'acao': 'enviar_para_validacao', 'registros_submetidos': total_enviados},
         universidade_id=uni_id
     )
 
-    if afetados > 0:
-        flash(f'{afetados} indicador(es) enviados para validação do Admin! Os campos agora estão bloqueados para edição.', 'success')
+    if total_enviados > 0:
+        flash(f'Dados enviados com sucesso para validação do Administrador! Os campos foram bloqueados para aguardar a homologação.', 'success')
     else:
-        flash('Nenhum dado novo ou pendente de envio encontrado para submissão.', 'info')
+        flash('Nenhum novo dado preenchido foi encontrado para envio.', 'info')
 
     return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))
 
@@ -240,5 +287,5 @@ def solicitar_alteracao():
         universidade_id=uni_id
     )
 
-    flash('Solicitação de alteração enviada para a validação do Admin. A linha permanecerá bloqueada até análise da Câmara.', 'info')
+    flash('Solicitação de alteração enviada para o Administrador. A linha permanecerá bloqueada até análise da Câmara.', 'info')
     return redirect(url_for('minha_universidade.painel', universidade_id=uni_id))

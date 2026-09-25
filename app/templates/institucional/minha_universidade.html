@@ -11,7 +11,6 @@
             <p class="text-sm text-slate-500 mt-1">Preencha os indicadores diretamente na tabela abaixo. Após o envio para validação, os campos são bloqueados.</p>
         </div>
 
-        <!-- Seletor de Universidade visível EXCLUSIVAMENTE para ADMIN_CAMARA -->
         {% if is_admin and universidades_disponiveis %}
         <div class="bg-slate-50 p-3 rounded-xl border border-slate-200">
             <form method="GET" action="{{ url_for('minha_universidade.painel') }}" class="flex items-center gap-2">
@@ -37,7 +36,7 @@
         <span class="text-[10px] font-bold uppercase tracking-wider text-abruem-600 bg-abruem-50 px-2 py-0.5 rounded border border-abruem-100">Ciclo aberto</span>
         <h2 class="text-base font-bold text-slate-900 mt-2">Campanha de Coleta Institucional</h2>
         <p class="text-xs text-slate-500 mt-1 leading-relaxed">
-            Preencha os indicadores de uma só vez na grade abaixo. Números decimais devem utilizar apenas vírgula (sem letras, espaços ou pontos).
+            Preencha os indicadores diretamente na grade. Números decimais devem utilizar apenas vírgula (sem letras, espaços ou pontos).
         </p>
     </div>
     <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm text-center">
@@ -57,115 +56,129 @@
     </div>
 </div>
 
-<!-- Bloco: Grade de Lançamento Direto com Validação e Solicitação de Alteração -->
-<div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-10">
-    <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-            <h3 class="text-base font-bold text-slate-900">Lançamento Direto de Indicadores</h3>
-            <p class="text-xs text-slate-500 mt-0.5">Preencha diretamente nas células. Digitação protegida: somente números e vírgula permitidos.</p>
+<!-- Bloco: Grade de Lançamento Direto com Envio em Formulário Consolidado -->
+<form id="form-grade-completa" method="POST" action="{{ url_for('minha_universidade.enviar_validacao') }}">
+    <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
+
+    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-10">
+        <div class="p-6 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Lançamento Direto de Indicadores</h3>
+                <p class="text-xs text-slate-500 mt-0.5">Preencha nas células e clique em Enviar. Digitação protegida contra letras, espaços e pontos.</p>
+            </div>
+            <div>
+                <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                    Enviar para Validação
+                </button>
+            </div>
         </div>
-        <form method="POST" action="{{ url_for('minha_universidade.enviar_validacao') }}">
-            <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-            <button type="submit" class="px-5 py-2.5 bg-emerald-600 text-white font-bold text-xs rounded-lg hover:bg-emerald-700 shadow-sm transition flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
-                Enviar para Validação ({{ total_rascunhos }})
-            </button>
-        </form>
-    </div>
 
-    <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm text-slate-600 border-collapse">
-            <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
-                <tr>
-                    <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
-                    {% for a in anos_ciclo %}
-                        <th scope="col" class="px-4 py-3.5 text-center w-28 font-bold text-slate-800">{{ a }}</th>
-                    {% endfor %}
-                    <th scope="col" class="px-6 py-3.5 text-center w-48">Status / Ação</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                {% for ind in indicadores_digitaveis %}
-                {% set status_da_linha = linha_status_map.get(ind.id, 'RASCUNHO') %}
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="px-6 py-3.5">
-                        <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
-                        <span class="text-[11px] font-mono text-slate-400 block">{{ ind.codigo }} · {{ ind.unidade_medida or 'número' }}</span>
-                    </td>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600 border-collapse">
+                <thead class="bg-slate-50 text-xs font-semibold uppercase tracking-wider text-slate-500 border-b border-slate-200">
+                    <tr>
+                        <th scope="col" class="px-6 py-3.5 w-1/3">Indicador</th>
+                        {% for a in anos_ciclo %}
+                            <th scope="col" class="px-4 py-3.5 text-center w-28 font-bold text-slate-800">{{ a }}</th>
+                        {% endfor %}
+                        <th scope="col" class="px-6 py-3.5 text-center w-52">Status / Ação</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for ind in indicadores_digitaveis %}
+                    {% set status_da_linha = linha_status_map.get(ind.id, 'RASCUNHO') %}
+                    {% set parecer_da_linha = linha_pareceres_map.get(ind.id) %}
+                    <tr class="hover:bg-slate-50/80 transition-colors {% if status_da_linha == 'DEVOLVIDO' %}bg-rose-50/40{% endif %}">
+                        <td class="px-6 py-3.5">
+                            <strong class="text-slate-900 block font-semibold">{{ ind.nome }}</strong>
+                            <span class="text-[11px] font-mono text-slate-400 block">{{ ind.codigo }} · {{ ind.unidade_medida or 'número' }}</span>
+                            {% if status_da_linha == 'DEVOLVIDO' and parecer_da_linha %}
+                                <div class="mt-2 p-2 rounded bg-rose-100/70 border border-rose-200 text-xs text-rose-800 leading-snug">
+                                    <strong>Justificativa da Recusa:</strong> {{ parecer_da_linha }}
+                                </div>
+                            {% endif %}
+                        </td>
 
-                    {% for a in anos_ciclo %}
-                    {% set reg = matriz[ind.id][a] %}
-                    {% set esta_bloqueado = (reg and reg.status_dado in ['ENVIADO', 'VALIDADO', 'SOLICITADO_ALTERACAO'] and not is_admin) %}
-                    <td class="px-4 py-3.5 text-center">
-                        <input type="text" 
-                               data-uni="{{ universidade.id }}" 
-                               data-ind="{{ ind.id }}" 
-                               data-ano="{{ a }}"
-                               value="{% if reg and reg.valor_numerico is not none %}{{ (reg.valor_numerico | string).replace('.', ',') }}{% endif %}"
-                               placeholder="-"
-                               inputmode="decimal"
-                               autocomplete="off"
-                               {% if esta_bloqueado %}disabled readonly title="Campo bloqueado para edição direta"{% endif %}
-                               class="celula-rapida w-24 text-center py-1.5 px-2 border rounded text-xs font-bold transition
-                               {% if esta_bloqueado %}
-                                   bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed
-                               {% elif reg and reg.status_dado == 'DEVOLVIDO' %}
-                                   bg-rose-50 border-rose-300 text-rose-900
-                               {% else %}
-                                   border-slate-300 bg-white text-slate-900 focus:border-abruem-500 focus:ring-1 focus:ring-abruem-500
-                               {% endif %}">
-                    </td>
-                    {% endfor %}
+                        {% for a in anos_ciclo %}
+                        {% set reg = matriz[ind.id][a] %}
+                        {% set esta_bloqueado = (reg and reg.status_dado in ['ENVIADO', 'VALIDADO', 'SOLICITADO_ALTERACAO'] and not is_admin) %}
+                        <td class="px-4 py-3.5 text-center align-top">
+                            <input type="text" 
+                                   name="valor_{{ ind.id }}_{{ a }}"
+                                   data-uni="{{ universidade.id }}" 
+                                   data-ind="{{ ind.id }}" 
+                                   data-ano="{{ a }}"
+                                   value="{% if reg and reg.valor_numerico is not none %}{{ (reg.valor_numerico | string).replace('.', ',') }}{% endif %}"
+                                   placeholder="-"
+                                   inputmode="decimal"
+                                   autocomplete="off"
+                                   {% if esta_bloqueado %}readonly tabindex="-1" title="Campo bloqueado para edição"{% endif %}
+                                   class="celula-rapida w-24 text-center py-1.5 px-2 border rounded text-xs font-bold transition
+                                   {% if esta_bloqueado %}
+                                       bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed select-none
+                                   {% elif reg and reg.status_dado == 'DEVOLVIDO' %}
+                                       bg-white border-rose-400 text-rose-900 focus:ring-1 focus:ring-rose-500
+                                   {% else %}
+                                       border-slate-300 bg-white text-slate-900 focus:border-abruem-500 focus:ring-1 focus:ring-abruem-500
+                                   {% endif %}">
+                        </td>
+                        {% endfor %}
 
-                    <td class="px-6 py-3.5 text-center">
-                        {% if status_da_linha == 'VALIDADO' %}
-                            <div class="flex flex-col items-center gap-1.5">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                    Validado
-                                </span>
-                                <form method="POST" action="{{ url_for('minha_universidade.solicitar_alteracao') }}" onsubmit="return confirm('Deseja solicitar autorização ao Admin para alterar este indicador? Os campos serão mantidos até a aprovação da Câmara.');">
-                                    <input type="hidden" name="universidade_id" value="{{ universidade.id }}">
-                                    <input type="hidden" name="indicador_id" value="{{ ind.id }}">
-                                    <button type="submit" class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 transition">
+                        <td class="px-6 py-3.5 text-center align-top">
+                            {% if status_da_linha == 'VALIDADO' %}
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Validado
+                                    </span>
+                                    <button type="button" 
+                                            onclick="solicitarAlteracaoLinha('{{ universidade.id }}', '{{ ind.id }}')"
+                                            class="px-2.5 py-1 text-[11px] font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 rounded border border-amber-300 transition">
                                         Solicitar Alteração
                                     </button>
-                                </form>
-                            </div>
-                        {% elif status_da_linha == 'ENVIADO' %}
-                            <div class="flex flex-col items-center gap-1.5">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
-                                    Em Validação
+                                </div>
+                            {% elif status_da_linha == 'ENVIADO' %}
+                                <div class="flex flex-col items-center gap-1.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                        Em Validação
+                                    </span>
+                                    <span class="text-[10px] text-slate-400 font-medium">Bloqueado (Admin)</span>
+                                </div>
+                            {% elif status_da_linha == 'SOLICITADO_ALTERACAO' %}
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                                        Alteração Solicitada
+                                    </span>
+                                    <span class="text-[10px] text-purple-600 font-medium">Aguardando Câmara</span>
+                                </div>
+                            {% elif status_da_linha == 'DEVOLVIDO' %}
+                                <div class="flex flex-col items-center gap-1">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                        Recusado / Devolvido
+                                    </span>
+                                    <span class="text-[10px] text-rose-600 font-bold">Edite e reenvie</span>
+                                </div>
+                            {% else %}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
+                                    Editável (Rascunho)
                                 </span>
-                                <span class="text-[10px] text-slate-400">Aguardando Admin</span>
-                            </div>
-                        {% elif status_da_linha == 'SOLICITADO_ALTERACAO' %}
-                            <div class="flex flex-col items-center gap-1">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                                    Alteração Solicitada
-                                </span>
-                                <span class="text-[10px] text-purple-600 font-medium">Aguardando liberação</span>
-                            </div>
-                        {% elif status_da_linha == 'DEVOLVIDO' %}
-                            <div class="flex flex-col items-center gap-1">
-                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
-                                    Recusado / Devolvido
-                                </span>
-                                <span class="text-[10px] text-rose-600">Corrija e reenvie</span>
-                            </div>
-                        {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded text-[11px] font-medium bg-slate-100 text-slate-600">
-                                Editável (Rascunho)
-                            </span>
-                        {% endif %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
     </div>
-</div>
+</form>
 
-<!-- Bloco: O que a plataforma calcula a partir do que você informou -->
+<!-- Formulário Oculto Auxiliar para Solicitação de Alteração -->
+<form id="form-solicitar-alteracao-aux" method="POST" action="{{ url_for('minha_universidade.solicitar_alteracao') }}" style="display: none;">
+    <input type="hidden" name="universidade_id" id="aux_uni_id">
+    <input type="hidden" name="indicador_id" id="aux_ind_id">
+</form>
+
+<!-- Bloco: Indicadores Calculados Automaticamente -->
 <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-12">
     <div class="p-6 border-b border-slate-100">
         <h3 class="text-base font-bold text-slate-900">O que a plataforma calcula a partir do que você informou</h3>
@@ -224,4 +237,14 @@
         <span class="text-xs text-slate-400 italic">Nenhum responsável cadastrado.</span>
     {% endif %}
 </div>
+
+<script>
+function solicitarAlteracaoLinha(uniId, indId) {
+    if (confirm('Deseja solicitar autorização ao Administrador para alterar este indicador? O indicador permanecerá bloqueado até que o Administrador aprove e zere a linha.')) {
+        document.getElementById('aux_uni_id').value = uniId;
+        document.getElementById('aux_ind_id').value = indId;
+        document.getElementById('form-solicitar-alteracao-aux').submit();
+    }
+}
+</script>
 {% endblock %}

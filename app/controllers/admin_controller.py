@@ -80,7 +80,7 @@ def decidir_submissao(registro_id):
     - Se for validação de novo lançamento (ENVIADO): VALIDAR aprova e homologa; DEVOLVER rejeita individualmente.
     - Se for solicitação de alteração (SOLICITADO_ALTERACAO):
         * APROVAR_ALTERACAO: Zera a linha do indicador na IES e a reabre como RASCUNHO editável.
-        * RECUSAR_ALTERACAO: Mantém o valor anterior intacto e o reclassifica como VALIDADO.
+        * RECUSAR_ALTERACAO: Mantém o valor anterior intacto e o reclassifica como VALIDADO com justificativa.
     """
     decisao = request.form.get('decisao')
     parecer = request.form.get('parecer', '').strip()
@@ -97,34 +97,47 @@ def decidir_submissao(registro_id):
         if decisao == 'APROVAR_ALTERACAO':
             reg_repo.liberar_e_zerar_indicador(registro.universidade_id, registro.indicador_id)
             MotorCalculo().calcular_indicadores_derivados(registro.universidade_id, registro.ano_referencia)
-            AuditoriaService().registrar_evento('registro_dados', 'ALTERACAO_AUTORIZADA',
-                                                dados_novos={'indicador_id': registro.indicador_id, 'universidade_id': registro.universidade_id})
-            flash('Solicitação de alteração aceita. A linha do indicador foi zerada e reaberta para preenchimento da universidade!', 'success')
+            AuditoriaService().registrar_evento(
+                'registro_dados', 'ALTERACAO_AUTORIZADA',
+                dados_novos={'indicador_id': registro.indicador_id, 'universidade_id': registro.universidade_id},
+                universidade_id=registro.universidade_id
+            )
+            flash('Solicitação de alteração aceita! A linha do indicador foi zerada e liberada para nova digitação pela universidade.', 'success')
         else:
+            if not parecer:
+                flash('Para recusar um pedido de alteração, a justificativa no parecer é obrigatória.', 'warning')
+                return redirect(url_for('admin.submissoes'))
+
             reg_repo.rejeitar_pedido_alteracao(registro.universidade_id, registro.indicador_id, parecer=parecer)
-            AuditoriaService().registrar_evento('registro_dados', 'ALTERACAO_RECUSADA',
-                                                dados_novos={'indicador_id': registro.indicador_id, 'parecer': parecer})
-            flash('Solicitação de alteração recusada. Os dados anteriores foram preservados.', 'warning')
+            AuditoriaService().registrar_evento(
+                'registro_dados', 'ALTERACAO_RECUSADA',
+                dados_novos={'indicador_id': registro.indicador_id, 'parecer': parecer},
+                universidade_id=registro.universidade_id
+            )
+            flash('Solicitação de alteração recusada. Os dados anteriores foram mantidos intactos.', 'warning')
 
         return redirect(url_for('admin.submissoes'))
 
     # Caso 2: Validação ou Rejeição de Lançamento Direto (ENVIADO)
     if decisao == 'DEVOLVER' and not parecer:
-        flash('Para rejeitar ou devolver um indicador, o parecer analítico é obrigatório.', 'warning')
+        flash('Para rejeitar ou devolver um indicador, o parecer analítico com o motivo é obrigatório.', 'warning')
         return redirect(url_for('admin.submissoes'))
 
     if decisao == 'VALIDAR':
         novo_status = 'VALIDADO'
         reg_repo.atualizar_status(registro_id, novo_status, parecer=None)
         MotorCalculo().calcular_indicadores_derivados(registro.universidade_id, registro.ano_referencia)
-        flash('Indicador validado com sucesso! Já está refletido nos cálculos públicos.', 'success')
+        flash('Indicador validado e homologado com sucesso! Já está refletido nos cálculos públicos.', 'success')
     else:
         novo_status = 'DEVOLVIDO'
         reg_repo.atualizar_status(registro_id, novo_status, parecer=parecer)
-        flash('Indicador devolvido para correção da universidade. Os demais indicadores não foram afetados.', 'warning')
+        flash('Indicador rejeitado e devolvido para correção da universidade com a devida justificativa.', 'warning')
 
-    AuditoriaService().registrar_evento('registro_dados', 'VALIDACAO',
-                                        dados_novos={'id': registro_id, 'indicador_id': registro.indicador_id, 'status': novo_status, 'parecer': parecer})
+    AuditoriaService().registrar_evento(
+        'registro_dados', 'VALIDACAO',
+        dados_novos={'id': registro_id, 'indicador_id': registro.indicador_id, 'status': novo_status, 'parecer': parecer},
+        universidade_id=registro.universidade_id
+    )
 
     return redirect(url_for('admin.submissoes'))
 

@@ -27,18 +27,18 @@
                     <tbody class="divide-y divide-slate-100">
                         {% for s in submissoes %}
                         <tr class="hover:bg-slate-50/80 transition-colors">
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 align-top">
                                 <strong class="text-slate-900 block">{{ s.universidade_sigla }}</strong>
                                 <span class="text-xs text-slate-400 block truncate">{{ s.universidade_nome }}</span>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 align-top">
                                 <strong class="text-slate-900 block">{{ s.indicador_nome }}</strong>
                                 <span class="font-mono text-xs text-slate-400 block">{{ s.indicador_codigo }}</span>
                             </td>
-                            <td class="px-6 py-4 text-center">
+                            <td class="px-6 py-4 text-center align-top">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-slate-100 text-slate-700">{{ s.ano_referencia }}</span>
                             </td>
-                            <td class="px-6 py-4 text-right">
+                            <td class="px-6 py-4 text-right align-top">
                                 <strong class="text-slate-900 text-sm block">
                                     {% if s.valor_numerico is not none %}
                                         {{ (s.valor_numerico | string).replace('.', ',') }}
@@ -47,7 +47,7 @@
                                     {% endif %}
                                 </strong>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 align-top">
                                 {% if s.status_dado == 'SOLICITADO_ALTERACAO' %}
                                     <!-- Pedido de Liberação / Alteração de Indicador -->
                                     <div class="mb-2">
@@ -57,12 +57,12 @@
                                         <p class="text-[11px] text-slate-500 mt-1">Aprovar irá zerar a linha deste indicador e liberá-la para nova digitação da IES.</p>
                                     </div>
                                     <form method="POST" action="{{ url_for('admin.decidir_submissao', registro_id=s.id) }}" class="space-y-2">
-                                        <input type="text" name="parecer" placeholder="Parecer/Motivo (opcional se aprovar)" 
+                                        <input type="text" name="parecer" placeholder="Parecer/Justificativa (obrigatório se recusar)" 
                                                class="w-full rounded-md border-slate-300 text-xs text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-1.5 px-2.5">
                                         <div class="flex items-center gap-2">
                                             <button type="submit" name="decisao" value="APROVAR_ALTERACAO" 
                                                     class="px-3 py-1 bg-purple-600 hover:bg-purple-700 text-white rounded text-xs font-semibold shadow-sm transition">
-                                                Permitir Alteração (Zerar)
+                                                Permitir Alteração (Zerar Linha)
                                             </button>
                                             <button type="submit" name="decisao" value="RECUSAR_ALTERACAO" 
                                                     class="px-3 py-1 bg-slate-600 hover:bg-slate-700 text-white rounded text-xs font-semibold shadow-sm transition">
@@ -73,7 +73,7 @@
                                 {% else %}
                                     <!-- Lançamento Direto Aguardando Homologação -->
                                     <form method="POST" action="{{ url_for('admin.decidir_submissao', registro_id=s.id) }}" class="space-y-2">
-                                        <input type="text" name="parecer" placeholder="Parecer (obrigatório se devolver)" 
+                                        <input type="text" name="parecer" placeholder="Justificativa (obrigatória se devolver)" 
                                                class="w-full rounded-md border-slate-300 text-xs text-slate-700 bg-white shadow-sm focus:border-abruem-500 focus:ring-abruem-500 py-1.5 px-2.5">
                                         <div class="flex items-center gap-2">
                                             <button type="submit" name="decisao" value="VALIDAR" 
